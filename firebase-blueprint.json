@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "transaction": {
+      "title": "CashTransaction",
+      "description": "Transaksi kas masuk dan keluar Masjid Al-Falah",
+      "type": "object",
+      "properties": {
+        "no": {
+          "type": "integer",
+          "description": "Nomor urut transaksi"
+        },
+        "tanggal": {
+          "type": "string",
+          "description": "Tanggal transaksi dalam format DD/MM/YYYY"
+        },
+        "deskripsi": {
+          "type": "string",
+          "description": "Deskripsi atau keterangan transaksi"
+        },
+        "pemasukan": {
+          "type": "number",
+          "description": "Jumlah pemasukan kas, null jika tidak ada"
+        },
+        "pengeluaran": {
+          "type": "number",
+          "description": "Jumlah pengeluaran kas, null jika tidak ada"
+        },
+        "saldo": {
+          "type": "number",
+          "description": "Saldo akumulasi berjalan"
+        },
+        "attachment": {
+          "type": "object",
+          "description": "Attachment file jika disertakan"
+        }
+      },
+      "required": ["no", "tanggal", "deskripsi"]
+    }
+  },
+  "firestore": {
+    "transactions": {
+      "schema": "transaction",
+      "description": "Koleksi seluruh transaksi kas Al-Falah"
+    }
+  }
+}

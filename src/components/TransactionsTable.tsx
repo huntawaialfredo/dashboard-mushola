@@ -22,7 +22,7 @@ import {
   Pencil
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { CashTransaction } from '../types';
 import { formatRupiah, parseAndFormatDate, formatDateOnly } from '../utils';
 
@@ -685,7 +685,7 @@ export default function TransactionsTable({
         }
 
         // @ts-ignore
-        doc.autoTable({
+        autoTable(doc, {
           startY: currentY,
           margin: { left: margin, right: margin },
           head: [[

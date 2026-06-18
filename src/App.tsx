@@ -10,6 +10,7 @@ import RestrictedAccess from './components/RestrictedAccess';
 import { CashTransaction } from './types';
 import { INITIAL_TRANSACTIONS } from './data';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
+import { getTransactionsFromDb, syncTransactionsToDb } from './lib/firebase';
 
 interface UserSession {
   username: string;
@@ -25,6 +26,48 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [userSession, setUserSession] = useState<UserSession | null>(null);
   const [autoOpenPrint, setAutoOpenPrint] = useState<boolean>(false);
+
+  // Initialize and synchronise Firebase Firestore database
+  const loadTransactionsFromDb = async () => {
+    setIsLoading(true);
+    setErrorMsg(null);
+    try {
+      const data = await getTransactionsFromDb();
+      if (data.length > 0) {
+        setTransactions(data);
+        localStorage.setItem('alfalah_transactions', JSON.stringify(data));
+      } else {
+        // Automatically seed the empty Firebase database with previous cache or fallbacks
+        const savedTransactions = localStorage.getItem('alfalah_transactions');
+        let initialList = INITIAL_TRANSACTIONS;
+        if (savedTransactions) {
+          try {
+            initialList = JSON.parse(savedTransactions);
+          } catch (e) {
+            initialList = INITIAL_TRANSACTIONS;
+          }
+        }
+        await syncTransactionsToDb(initialList);
+        setTransactions(initialList);
+      }
+    } catch (err: any) {
+      console.error('Error loading data from Firebase:', err);
+      setErrorMsg('Gagal memuat data utama dari database Firebase. Berpindah ke backup file lokal.');
+      
+      const savedTransactions = localStorage.getItem('alfalah_transactions');
+      if (savedTransactions) {
+        try {
+          setTransactions(JSON.parse(savedTransactions));
+        } catch (e) {
+          setTransactions(INITIAL_TRANSACTIONS);
+        }
+      } else {
+        setTransactions(INITIAL_TRANSACTIONS);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Initialize data and session on mount
   useEffect(() => {
@@ -42,20 +85,11 @@ export default function App() {
     const savedUrl = localStorage.getItem('alfalah_gas_url') || '';
     setGasUrl(savedUrl);
 
-    // Load custom simulated transactions if any, otherwise fallback to original mock
-    const savedTransactions = localStorage.getItem('alfalah_transactions');
-    if (savedTransactions) {
-      try {
-        setTransactions(JSON.parse(savedTransactions));
-      } catch (e) {
-        setTransactions(INITIAL_TRANSACTIONS);
-      }
-    } else {
-      setTransactions(INITIAL_TRANSACTIONS);
-    }
+    // Fetch primary database records
+    loadTransactionsFromDb();
   }, []);
 
-  // Fetch data if Google Apps Script URL exists
+  // Fetch data if Google Apps Script URL exists and import it securely to Firebase
   const fetchDataFromSheet = async (urlToFetch: string) => {
     if (!urlToFetch) return false;
     setIsLoading(true);
@@ -67,6 +101,8 @@ export default function App() {
       }
       const result = await response.json();
       if (result && result.status === 'success' && Array.isArray(result.data)) {
+        // Write the imported spreadsheet rows into the Firebase central database
+        await syncTransactionsToDb(result.data);
         setTransactions(result.data);
         localStorage.setItem('alfalah_transactions', JSON.stringify(result.data));
         return true;
@@ -75,20 +111,12 @@ export default function App() {
       }
     } catch (err: any) {
       console.error('Fetch error:', err);
-      setErrorMsg(`Gagal memuat data dari Google Sheets: ${err.message || 'Periksa koneksi jaringan.'}`);
+      setErrorMsg(`Gagal memuat dari Google Sheets: ${err.message || 'Periksa koneksi jaringan.'}`);
       return false;
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Run initial fetch if key exists
-  useEffect(() => {
-    const savedUrl = localStorage.getItem('alfalah_gas_url') || '';
-    if (savedUrl) {
-      fetchDataFromSheet(savedUrl);
-    }
-  }, []);
 
   // Set up User Login
   const handleLogin = (username: string, role: 'admin' | 'user', name: string) => {
@@ -104,7 +132,7 @@ export default function App() {
     setActiveTab('dashboard'); // fallback to general dashboard
   };
 
-  // Save GAS URL
+  // Save GAS URL and trigger initial Sheets import if saving
   const handleSetGasUrl = (url: string) => {
     setGasUrl(url);
     localStorage.setItem('alfalah_gas_url', url);
@@ -116,107 +144,153 @@ export default function App() {
     return await fetchDataFromSheet(url);
   };
 
-  // Clear connection
-  const handleClearUrl = () => {
-    setGasUrl('');
-    localStorage.removeItem('alfalah_gas_url');
-    localStorage.removeItem('alfalah_transactions');
-    setTransactions(INITIAL_TRANSACTIONS);
-    setErrorMsg(null);
+  // Clear connection and reset database back to defaults
+  const handleClearUrl = async () => {
+    setIsLoading(true);
+    try {
+      setGasUrl('');
+      localStorage.removeItem('alfalah_gas_url');
+      localStorage.removeItem('alfalah_transactions');
+      await syncTransactionsToDb(INITIAL_TRANSACTIONS);
+      setTransactions(INITIAL_TRANSACTIONS);
+      setErrorMsg(null);
+    } catch (err) {
+      console.error("Failed to reset database on clear:", err);
+      setErrorMsg("Gagal mereset database ke data bawaan.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Add Transaction dynamically (Simulation Mode)
-  const handleAddTransaction = (newTx: Omit<CashTransaction, 'no' | 'saldo'>) => {
-    const updatedRaw = [...transactions, {
-      ...newTx,
-      no: transactions.length + 1,
-      saldo: 0
-    }];
+  // Add Transaction dynamically using Firebase database
+  const handleAddTransaction = async (newTx: Omit<CashTransaction, 'no' | 'saldo'>) => {
+    setIsLoading(true);
+    try {
+      const updatedRaw = [...transactions, {
+        ...newTx,
+        no: transactions.length + 1,
+        saldo: 0
+      }];
 
-    const parseDate = (dStr: string) => {
-      const p = dStr.split('/');
-      return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0])).getTime();
-    };
-
-    const sorted = updatedRaw.sort((a, b) => parseDate(a.tanggal) - parseDate(b.tanggal));
-
-    let currentSaldo = 0;
-    const finalTransactions = sorted.map((tx, idx) => {
-      currentSaldo += (tx.pemasukan || 0) - (tx.pengeluaran || 0);
-      return {
-        ...tx,
-        no: idx + 1,
-        saldo: currentSaldo
+      const parseDate = (dStr: string) => {
+        const p = dStr.split('/');
+        return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0])).getTime();
       };
-    });
 
-    setTransactions(finalTransactions);
-    localStorage.setItem('alfalah_transactions', JSON.stringify(finalTransactions));
-  };
+      const sorted = updatedRaw.sort((a, b) => parseDate(a.tanggal) - parseDate(b.tanggal));
 
-  // Reset core simulation
-  const handleResetTransactions = () => {
-    setTransactions(INITIAL_TRANSACTIONS);
-    localStorage.removeItem('alfalah_transactions');
-    setErrorMsg(null);
-  };
-
-  // Edit Transaction dynamically (Admin Mode)
-  const handleEditTransaction = (targetNo: number, updatedFields: Partial<Omit<CashTransaction, 'no' | 'saldo'>>) => {
-    const updatedList = transactions.map(tx => {
-      if (tx.no === targetNo) {
+      let currentSaldo = 0;
+      const finalTransactions = sorted.map((tx, idx) => {
+        currentSaldo += (tx.pemasukan || 0) - (tx.pengeluaran || 0);
         return {
           ...tx,
-          ...updatedFields,
+          no: idx + 1,
+          saldo: currentSaldo
         };
-      }
-      return tx;
-    });
+      });
 
-    const parseDate = (dStr: string) => {
-      const p = dStr.split('/');
-      return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0])).getTime();
-    };
-
-    const sorted = [...updatedList].sort((a, b) => parseDate(a.tanggal) - parseDate(b.tanggal));
-
-    let currentSaldo = 0;
-    const finalTransactions = sorted.map((tx, idx) => {
-      currentSaldo += (tx.pemasukan || 0) - (tx.pengeluaran || 0);
-      return {
-        ...tx,
-        no: idx + 1,
-        saldo: currentSaldo
-      };
-    });
-
-    setTransactions(finalTransactions);
-    localStorage.setItem('alfalah_transactions', JSON.stringify(finalTransactions));
+      // Commit changes to Firebase Firestore collection
+      await syncTransactionsToDb(finalTransactions);
+      setTransactions(finalTransactions);
+      localStorage.setItem('alfalah_transactions', JSON.stringify(finalTransactions));
+    } catch (err: any) {
+      console.error('Failed to commit transaction to Firebase:', err);
+      setErrorMsg('Gagal menyimpan transaksi baru ke database Firebase.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Delete Transaction dynamically (Admin Mode)
-  const handleDeleteTransaction = (targetNo: number) => {
-    const remainingList = transactions.filter(tx => tx.no !== targetNo);
+  // Reset database back to default transactions
+  const handleResetTransactions = async () => {
+    setIsLoading(true);
+    try {
+      await syncTransactionsToDb(INITIAL_TRANSACTIONS);
+      setTransactions(INITIAL_TRANSACTIONS);
+      localStorage.removeItem('alfalah_transactions');
+      setErrorMsg(null);
+    } catch (err: any) {
+      console.error('Failed to reset Firebase:', err);
+      setErrorMsg('Gagal mereset database ke data bawaan.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const parseDate = (dStr: string) => {
-      const p = dStr.split('/');
-      return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0])).getTime();
-    };
+  // Edit Transaction dynamically in the database
+  const handleEditTransaction = async (targetNo: number, updatedFields: Partial<Omit<CashTransaction, 'no' | 'saldo'>>) => {
+    setIsLoading(true);
+    try {
+      const updatedList = transactions.map(tx => {
+        if (tx.no === targetNo) {
+          return {
+            ...tx,
+            ...updatedFields,
+          };
+        }
+        return tx;
+      });
 
-    const sorted = [...remainingList].sort((a, b) => parseDate(a.tanggal) - parseDate(b.tanggal));
-
-    let currentSaldo = 0;
-    const finalTransactions = sorted.map((tx, idx) => {
-      currentSaldo += (tx.pemasukan || 0) - (tx.pengeluaran || 0);
-      return {
-        ...tx,
-        no: idx + 1,
-        saldo: currentSaldo
+      const parseDate = (dStr: string) => {
+        const p = dStr.split('/');
+        return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0])).getTime();
       };
-    });
 
-    setTransactions(finalTransactions);
-    localStorage.setItem('alfalah_transactions', JSON.stringify(finalTransactions));
+      const sorted = [...updatedList].sort((a, b) => parseDate(a.tanggal) - parseDate(b.tanggal));
+
+      let currentSaldo = 0;
+      const finalTransactions = sorted.map((tx, idx) => {
+        currentSaldo += (tx.pemasukan || 0) - (tx.pengeluaran || 0);
+        return {
+          ...tx,
+          no: idx + 1,
+          saldo: currentSaldo
+        };
+      });
+
+      await syncTransactionsToDb(finalTransactions);
+      setTransactions(finalTransactions);
+      localStorage.setItem('alfalah_transactions', JSON.stringify(finalTransactions));
+    } catch (err: any) {
+      console.error('Failed to save edited transaction:', err);
+      setErrorMsg('Gagal menyimpan hasil edit transaksi ke database Firebase.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Delete Transaction dynamically in the database
+  const handleDeleteTransaction = async (targetNo: number) => {
+    setIsLoading(true);
+    try {
+      const remainingList = transactions.filter(tx => tx.no !== targetNo);
+
+      const parseDate = (dStr: string) => {
+        const p = dStr.split('/');
+        return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0])).getTime();
+      };
+
+      const sorted = [...remainingList].sort((a, b) => parseDate(a.tanggal) - parseDate(b.tanggal));
+
+      let currentSaldo = 0;
+      const finalTransactions = sorted.map((tx, idx) => {
+        currentSaldo += (tx.pemasukan || 0) - (tx.pengeluaran || 0);
+        return {
+          ...tx,
+          no: idx + 1,
+          saldo: currentSaldo
+        };
+      });
+
+      await syncTransactionsToDb(finalTransactions);
+      setTransactions(finalTransactions);
+      localStorage.setItem('alfalah_transactions', JSON.stringify(finalTransactions));
+    } catch (err: any) {
+      console.error('Failed to delete transaction:', err);
+      setErrorMsg('Gagal menghapus transaksi dari database Firebase.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Page switcher

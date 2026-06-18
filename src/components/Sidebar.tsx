@@ -121,11 +121,11 @@ export default function Sidebar({
           <div className="mt-5 p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <span className={`relative flex h-2 w-2`}>
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isSheetConnected ? 'bg-amber-400' : 'bg-emerald-400'}`}></span>
-                <span className={`relative inline-flex rounded-full h-2 w-2 ${isSheetConnected ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-400`}></span>
+                <span className={`relative inline-flex rounded-full h-2 w-2 bg-emerald-500`}></span>
               </span>
               <span className="text-xs font-semibold text-slate-300">
-                {isSheetConnected ? 'Koneksi: Google Sheets' : 'Koneksi: Simfoni Lokal'}
+                {isSheetConnected ? 'Database: Firebase (GAS Synced)' : 'Database: Firebase Cloud'}
               </span>
             </div>
             <button

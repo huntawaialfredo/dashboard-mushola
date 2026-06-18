@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Check if the input is a valid transaction
+    function isValidTransaction(data) {
+      return data.no is int 
+        && data.tanggal is string 
+        && data.tanggal.size() > 0 
+        && data.deskripsi is string 
+        && data.deskripsi.size() > 0;
+    }
+
+    match /transactions/{transactionId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /test/{testId} {
+      allow read: if true;
+    }
+
+    // Default catch-all deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
