@@ -15,6 +15,7 @@ import {
   User,
   Settings
 } from 'lucide-react';
+import { AlFalahLogo } from './AlFalahLogo';
 
 interface SidebarProps {
   activeTab: string;
@@ -63,13 +64,13 @@ export default function Sidebar({
     <>
       {/* Mobile Top Bar */}
       <div id="mobile-nav" className="flex items-center justify-between px-4 py-3 bg-[#0a0c18] text-white lg:hidden border-b border-slate-800/50 print:hidden">
-        <div className="flex items-center space-x-2">
-          <div className="p-1.5 bg-emerald-500 rounded-lg shadow-[0_0_10px_rgba(16,185,129,0.4)]">
-            <Sparkles className="w-5 h-5 text-white" />
+        <div className="flex items-center space-x-2.5">
+          <div className="p-1.5 bg-slate-900 border border-amber-500/20 rounded-lg shadow-[0_0_10px_rgba(212,165,85,0.2)] flex items-center justify-center">
+            <AlFalahLogo iconOnly size="custom" className="w-6 h-6 animate-pulse" />
           </div>
           <div>
-            <h1 className="text-sm font-bold tracking-tight text-white">Musholla Al-Falah</h1>
-            <p className="text-[10px] text-emerald-400 font-mono">Buku Kas Operasional</p>
+            <h1 className="text-xs font-black tracking-[0.12em] text-[#d4a555] font-serif uppercase leading-none">DKM AL-FALAH</h1>
+            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 font-mono">VICTORIA PERMAI</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -107,13 +108,13 @@ export default function Sidebar({
       >
         {/* Sidebar Header */}
         <div className="p-6 border-b border-slate-800/50">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-emerald-500 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.4)]">
-              <Sparkles className="w-5 h-5 text-white animate-pulse" />
+          <div className="flex items-center space-x-3.5">
+            <div className="p-1.5 bg-slate-900 border border-amber-500/20 rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(212,165,85,0.2)]">
+              <AlFalahLogo iconOnly size="custom" className="w-7 h-7 animate-pulse" />
             </div>
             <div>
-              <h1 className="font-extrabold text-base tracking-tight text-white">Musholla Al-Falah</h1>
-              <p className="text-xs text-emerald-400 font-semibold mt-0.5 font-mono">Buku Kas & Operasional</p>
+              <h1 className="font-black text-xs tracking-[0.12em] text-[#d4a555] font-serif uppercase leading-tight">DKM AL-FALAH</h1>
+              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 font-mono">VICTORIA PERMAI</p>
             </div>
           </div>
           
@@ -125,7 +126,7 @@ export default function Sidebar({
                 <span className={`relative inline-flex rounded-full h-2 w-2 bg-emerald-500`}></span>
               </span>
               <span className="text-xs font-semibold text-slate-300">
-                {isSheetConnected ? 'Database: Firebase (GAS Synced)' : 'Database: Firebase Cloud'}
+                {isSheetConnected ? 'Database: Synced' : 'Database: Firebase Cloud'}
               </span>
             </div>
             <button

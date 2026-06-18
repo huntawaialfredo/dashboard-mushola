@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { Sparkles, Key, User, ShieldAlert, HelpCircle } from 'lucide-react';
+import { AlFalahLogo } from './AlFalahLogo';
 
 interface LoginScreenProps {
   onLogin: (username: string, role: 'admin' | 'user', name: string) => void;
@@ -69,11 +70,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex p-3 bg-emerald-500 rounded-2xl shadow-[0_0_25px_rgba(16,185,129,0.3)] mb-4 border border-emerald-400/20">
-            <Sparkles className="w-8 h-8 text-white animate-pulse" />
-          </div>
-          <h1 className="text-2xl font-black text-white tracking-tight sm:text-3xl">Musholla Al-Falah</h1>
-          <p className="text-xs text-slate-400 font-mono mt-1 uppercase tracking-widest font-semibold">Sistem Kas & Keuangan Operasional</p>
+          <AlFalahLogo size="custom" className="w-20.5 h-13 animate-pulse" />
+          <p className="text-[10px] text-emerald-400 font-mono mt-3 uppercase tracking-widest font-black">Sistem Kas & Keuangan Operasional</p>
         </div>
 
         {/* Main Card */}

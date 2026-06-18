@@ -532,8 +532,23 @@ export default function TransactionsTable({
   };
 
   // Direct client-side HTML-to-PDF compiler using jsPDF & jspdf-autotable
-  const handleExportPDF = (fileName: string) => {
+  const handleExportPDF = (
+    fileName: string,
+    overrideTransactions?: CashTransaction[],
+    overrideStartDate?: string,
+    overrideEndDate?: string,
+    overrideSelectedMonth?: string,
+    overrideSelectedYear?: string,
+    overridePrintMode?: 'all' | 'attachments_only'
+  ) => {
     setIsGeneratingPDF(true);
+
+    const targetTransactions = overrideTransactions || processedTransactions;
+    const targetStartDate = overrideStartDate !== undefined ? overrideStartDate : startDate;
+    const targetEndDate = overrideEndDate !== undefined ? overrideEndDate : endDate;
+    const targetSelectedMonth = overrideSelectedMonth !== undefined ? overrideSelectedMonth : selectedMonth;
+    const targetSelectedYear = overrideSelectedYear !== undefined ? overrideSelectedYear : selectedYear;
+    const targetPrintMode = overridePrintMode !== undefined ? overridePrintMode : printMode;
 
     try {
       const doc = new jsPDF({
@@ -551,64 +566,102 @@ export default function TransactionsTable({
       // Standard Font setup
       doc.setFont('helvetica', 'normal');
 
-      if (printMode === 'all') {
-        // --- 1. KOP SURAT (Letterhead Letter Cop) ---
-        let currentY = 15;
+      if (targetPrintMode === 'all') {
+        // --- 1. KOP SURAT (Letterhead Letter Cop - Styled from the elegant DKM AL-FALAH template) ---
+        // Rich, dark imperial navy-slate banner background
+        doc.setFillColor(11, 28, 45);
+        doc.rect(0, 0, pageWidth, 44, 'F');
 
-        // Inst. Main Header
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(18);
-        doc.setTextColor(0, 0, 0); // Black
-        doc.text('MUSHOLA AL-FALAH', pageWidth / 2, currentY, { align: 'center' });
+        // Central coordinates for the gorgeous Golden Mosque Dome Logo
+        const cx = pageWidth / 2;
+        const cy = 13;
 
-        currentY += 6;
-        // Secretariat details
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8.5);
-        doc.setTextColor(75, 85, 99); // neutral gray
-        doc.text('Sekretariat: Jl. Raya Al-Falah No. 12, Kel. Palmerah, Jakarta Barat, 11480', pageWidth / 2, currentY, { align: 'center' });
+        // 1. Double crescent path (Outer Gold crescent moon outline)
+        doc.setFillColor(212, 165, 85); // elegant warm gold
+        doc.circle(cx - 3.2, cy - 2.8, 4.4, 'F');
+        doc.setFillColor(11, 28, 45); // match bg mask
+        doc.circle(cx - 2.0, cy - 2.8, 4.1, 'F');
 
-        currentY += 4.5;
-        // Digital contacts
-        doc.setFont('text', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(107, 114, 128);
-        doc.text('Email: info@musholaalfalah.my.id | Telp: +62 821-1234-5678', pageWidth / 2, currentY, { align: 'center' });
-
-        currentY += 4;
-        // Double lines separator
-        doc.setLineWidth(0.8);
-        doc.setDrawColor(0, 0, 0);
-        doc.line(margin, currentY, pageWidth - margin, currentY);
+        // 2. Dome outline curves (Golden Islamic geometric style archs)
+        doc.setDrawColor(212, 165, 85);
+        doc.setLineWidth(0.45);
         
-        currentY += 1.2;
-        doc.setLineWidth(0.35);
-        doc.line(margin, currentY, pageWidth - margin, currentY);
+        // Base structure of the dome symbol
+        doc.line(cx - 6.5, cy + 5, cx + 6.5, cy + 5);
+        
+        // Dynamic arch curves intersecting in a beautiful point
+        doc.line(cx - 6.5, cy + 5, cx, cy - 1);
+        doc.line(cx + 6.5, cy + 5, cx, cy - 1);
+        
+        // Inner layered arch lines matching the luxury logo
+        doc.line(cx - 3.8, cy + 5, cx, cy + 1.8);
+        doc.line(cx + 3.8, cy + 5, cx, cy + 1.8);
+        
+        // Mini spires
+        doc.line(cx, cy - 1, cx, cy - 3.5);
 
-        currentY += 8;
+        // Solid gold center accent star/stone
+        doc.setFillColor(212, 165, 85);
+        doc.circle(cx, cy - 3.8, 0.45, 'F');
 
-        // --- 2. REPORT TITLE & FILTER PERIODS ---
+        // Write Institution Text: "DKM AL-FALAH" in large serif-style display title
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(13);
-        doc.setTextColor(17, 24, 39);
+        doc.setFontSize(23);
+        doc.setTextColor(212, 165, 85); // Solid premium gold
+        doc.text('DKM AL-FALAH', pageWidth / 2, 28, { align: 'center' });
+
+        // Subtitle / Address in thin light warm gold
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(220, 210, 190); // soft bone-gold
+        doc.text('Perumahan Victoria Permai, Babelan Kota, Babelan, Bekasi 17610', pageWidth / 2, 34, { align: 'center' });
+
+        // Thin Golden Horizontal Divider Line in matching gold
+        doc.setLineWidth(0.28);
+        doc.setDrawColor(212, 165, 85);
+        
+        // Draw double side lines with centered diamond and corner stars
+        doc.line(margin + 5, 39.5, pageWidth / 2 - 5, 39.5);
+        doc.line(pageWidth / 2 + 5, 39.5, pageWidth - margin - 5, 39.5);
+
+        // Center golden diamond separator
+        doc.setFillColor(212, 165, 85);
+        doc.triangle(pageWidth / 2, 38.5, pageWidth / 2 - 1.2, 39.5, pageWidth / 2 + 1.2, 39.5, 'FD');
+        doc.triangle(pageWidth / 2, 40.5, pageWidth / 2 - 1.2, 39.5, pageWidth / 2 + 1.2, 39.5, 'FD');
+
+        // Side boundary stars / mini 8-point stars
+        // Left offset star
+        doc.triangle(margin + 3, 39.0, margin + 2.5, 39.5, margin + 3.5, 39.5, 'FD');
+        doc.triangle(margin + 3, 40.0, margin + 2.5, 39.5, margin + 3.5, 39.5, 'FD');
+        // Right offset star
+        doc.triangle(pageWidth - margin - 3, 39.0, pageWidth - margin - 3.5, 39.5, pageWidth - margin - 2.5, 39.5, 'FD');
+        doc.triangle(pageWidth - margin - 3, 40.0, pageWidth - margin - 3.5, 39.5, pageWidth - margin - 2.5, 39.5, 'FD');
+
+        // Transition back to page content space (Y restarts below the cover background)
+        let currentY = 53;
+
+        // --- 2. REPORT TITLE & FILTER PERIODS (Perfect spacing below the dark banner) ---
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(15);
+        doc.setTextColor(15, 23, 42); // deep slate/black
         doc.text('Laporan Keuangan Kas Buku Besar', pageWidth / 2, currentY, { align: 'center' });
 
-        currentY += 5.5;
+        currentY += 6.0;
 
         // Dynamic time active filter period text
         let periodText = 'Periode: Semua Riwayat Transaksi';
-        if (selectedMonth !== 'all' || selectedYear !== 'all') {
-          const monthDetail = INDONESIAN_MONTHS.find(m => m.value === selectedMonth);
+        if (targetSelectedMonth !== 'all' || targetSelectedYear !== 'all') {
+          const monthDetail = INDONESIAN_MONTHS.find(m => m.value === targetSelectedMonth);
           const monthName = monthDetail ? monthDetail.name : '';
-          const yearText = selectedYear !== 'all' ? `${selectedYear} M` : 'Semua Tahun';
+          const yearText = targetSelectedYear !== 'all' ? `${targetSelectedYear} M` : 'Semua Tahun';
           let rLabel = '';
-          if (startDate || endDate) {
-            rLabel = ` (${startDate ? formatDateOnly(startDate) : ''} s.d ${endDate ? formatDateOnly(endDate) : ''})`;
+          if (targetStartDate || targetEndDate) {
+            rLabel = ` (${targetStartDate ? formatDateOnly(targetStartDate) : ''} s.d ${targetEndDate ? formatDateOnly(targetEndDate) : ''})`;
           }
           periodText = `Periode: ${monthName} ${yearText}${rLabel}`.trim();
-        } else if (startDate || endDate) {
-          const sLabel = startDate ? formatDateOnly(startDate) : '';
-          const eLabel = endDate ? formatDateOnly(endDate) : '';
+        } else if (targetStartDate || targetEndDate) {
+          const sLabel = targetStartDate ? formatDateOnly(targetStartDate) : '';
+          const eLabel = targetEndDate ? formatDateOnly(targetEndDate) : '';
           periodText = `Periode: ${sLabel} s.d ${eLabel}`;
         }
 
@@ -628,8 +681,8 @@ export default function TransactionsTable({
         currentY += 7;
 
         // --- 3. METRICS OVERVIEW SUMMARY BOXES ---
-        const totalIncome = processedTransactions.reduce((acc, curr) => acc + (curr.pemasukan || 0), 0);
-        const totalSpent = processedTransactions.reduce((acc, curr) => acc + (curr.pengeluaran || 0), 0);
+        const totalIncome = targetTransactions.reduce((acc, curr) => acc + (curr.pemasukan || 0), 0);
+        const totalSpent = targetTransactions.reduce((acc, curr) => acc + (curr.pengeluaran || 0), 0);
         const finalBalance = totalIncome - totalSpent;
 
         // Draw soft grey filled container
@@ -670,7 +723,7 @@ export default function TransactionsTable({
         currentY += 21;
 
         // --- 4. DATA TABLE VIA AUTO-TABLE (CRISP SCALED VECTOR) ---
-        const tableBody = processedTransactions.map((tx, idx) => [
+        const tableBody = targetTransactions.map((tx, idx) => [
           (idx + 1).toString(),
           formatDateOnly(tx.tanggal),
           tx.deskripsi,
@@ -741,29 +794,29 @@ export default function TransactionsTable({
         const relativeColsRightX = margin + ((contentWidth / 4) * 3);
 
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8.5);
+        doc.setFontSize(10);
         doc.setTextColor(55, 65, 81); // neutral-700
         
-        // Col left: Ketua Ta'mir
+        // Col left: Ketua DKM Al-Falah
         doc.text('Mengetahui,', relativeColsLeftX, finalY, { align: 'center' });
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(17, 24, 39);
-        doc.text("Ketua Ta'mir Mushola Al-Falah", relativeColsLeftX, finalY + 4.5, { align: 'center' });
+        doc.setTextColor(0, 0, 0);
+        doc.text("Ketua DKM Al-Falah", relativeColsLeftX, finalY + 5.5, { align: 'center' });
         
-        // Col right: Treasurer
+        // Col right: Treasurer (Bekasi)
         const formattedDateSign = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(55, 65, 81);
-        doc.text(`Jakarta, ${formattedDateSign}`, relativeColsRightX, finalY, { align: 'center' });
+        doc.text(`Bekasi, ${formattedDateSign}`, relativeColsRightX, finalY, { align: 'center' });
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(17, 24, 39);
-        doc.text('Bendahara Mushola Al-Falah', relativeColsRightX, finalY + 4.5, { align: 'center' });
+        doc.setTextColor(0, 0, 0);
+        doc.text('Bendahara Mushola Al-Falah', relativeColsRightX, finalY + 5.5, { align: 'center' });
 
         // Bottom underlines
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(100, 100, 100);
-        doc.text('( _______________________ )', relativeColsLeftX, finalY + 28, { align: 'center' });
-        doc.text('( _______________________ )', relativeColsRightX, finalY + 28, { align: 'center' });
+        doc.setTextColor(17, 24, 39);
+        doc.text('( _______________________ )', relativeColsLeftX, finalY + 31, { align: 'center' });
+        doc.text('( _______________________ )', relativeColsRightX, finalY + 31, { align: 'center' });
 
       } else {
         // --- ATTACHMENTS_ONLY MODE (DEDICATED COMPILATION) ---
@@ -796,9 +849,9 @@ export default function TransactionsTable({
         currentY += 6;
 
         let periodText = 'Semua Berkas Terlampir';
-        if (startDate || endDate) {
-          const sDateText = startDate ? formatDateOnly(startDate) : '';
-          const eDateText = endDate ? formatDateOnly(endDate) : '';
+        if (targetStartDate || targetEndDate) {
+          const sDateText = targetStartDate ? formatDateOnly(targetStartDate) : '';
+          const eDateText = targetEndDate ? formatDateOnly(targetEndDate) : '';
           periodText = `Periode Saringan Tanggal: ${sDateText} s.d ${eDateText}`;
         }
         
@@ -808,7 +861,7 @@ export default function TransactionsTable({
         
         currentY += 10;
 
-        const withAttachments = processedTransactions.filter(tx => tx.attachment);
+        const withAttachments = targetTransactions.filter(tx => tx.attachment);
 
         if (withAttachments.length === 0) {
           doc.setFont('helvetica', 'italic');
@@ -1709,19 +1762,22 @@ export default function TransactionsTable({
               <button
                 type="button"
                 onClick={() => {
-                  setStartDate(modalStartDate);
-                  setEndDate(modalEndDate);
-                  setSelectedMonth(printFilterType === 'month_year' ? modalSelectedMonth : 'all');
-                  setSelectedYear(printFilterType === 'month_year' ? modalSelectedYear : 'all');
-                  setPrintMode('all');
-                  setShowPrintModal(false);
+                  const exportTargetMonth = printFilterType === 'month_year' ? modalSelectedMonth : 'all';
+                  const exportTargetYear = printFilterType === 'month_year' ? modalSelectedYear : 'all';
 
-                  // Trigger download of attachments if checked
-                  if (modalDownloadAttachments && hasAnyAttachments) {
-                    const rangeFiltered = transactions.filter(tx => {
-                      const parsed = parseDateParts(tx.tanggal);
-                      if (parsed !== null) {
-                        const txDate = new Date(parseInt(parsed.year, 10), parsed.month, parsed.day, 12, 0, 0, 0);
+                  // Dynamic calculation of exactly which transactions to print
+                  const rangeFiltered = transactions.filter(tx => {
+                    const parsed = parseDateParts(tx.tanggal);
+                    if (parsed !== null) {
+                      const txDate = new Date(parseInt(parsed.year, 10), parsed.month, parsed.day, 12, 0, 0, 0);
+                      
+                      if (printFilterType === 'month_year') {
+                        if (exportTargetYear !== 'all' && parsed.year !== exportTargetYear) return false;
+                        if (exportTargetMonth !== 'all') {
+                          const monthStr = String(parsed.month + 1).padStart(2, '0');
+                          if (monthStr !== exportTargetMonth) return false;
+                        }
+                      } else {
                         if (modalStartDate) {
                           const startParts = modalStartDate.split('-');
                           const sDate = new Date(parseInt(startParts[0], 10), parseInt(startParts[1], 10) - 1, parseInt(startParts[2], 10), 0, 0, 0, 0);
@@ -1732,11 +1788,26 @@ export default function TransactionsTable({
                           const eDate = new Date(parseInt(endParts[0], 10), parseInt(endParts[1], 10) - 1, parseInt(endParts[2], 10), 23, 59, 59, 999);
                           if (txDate.getTime() > eDate.getTime()) return false;
                         }
-                        return true;
                       }
-                      return false;
-                    });
+                      return true;
+                    }
+                    return false;
+                  });
 
+                  // Preserve selected sorting order
+                  rangeFiltered.sort((a, b) => {
+                    return sortOrder === 'desc' ? b.no - a.no : a.no - b.no;
+                  });
+
+                  setStartDate(modalStartDate);
+                  setEndDate(modalEndDate);
+                  setSelectedMonth(exportTargetMonth);
+                  setSelectedYear(exportTargetYear);
+                  setPrintMode('all');
+                  setShowPrintModal(false);
+
+                  // Trigger download of attachments if checked
+                  if (modalDownloadAttachments && hasAnyAttachments) {
                     const withAttachments = rangeFiltered.filter(tx => tx.attachment);
                     if (withAttachments.length > 0) {
                       withAttachments.forEach((tx, idx) => {
@@ -1757,7 +1828,15 @@ export default function TransactionsTable({
                     const cleanStart = modalStartDate ? modalStartDate.replace(/-/g, '') : 'Semua';
                     const cleanEnd = modalEndDate ? modalEndDate.replace(/-/g, '') : 'Semua';
                     const fileName = `Laporan_Kas_Musholla_Al_Falah_${cleanStart}_s.d_${cleanEnd}.pdf`;
-                    handleExportPDF(fileName);
+                    handleExportPDF(
+                      fileName,
+                      rangeFiltered,
+                      modalStartDate,
+                      modalEndDate,
+                      exportTargetMonth,
+                      exportTargetYear,
+                      'all'
+                    );
                   }, 600);
                 }}
                 className="flex items-center space-x-1.5 px-4.5 py-2.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-[#10b981] text-white transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] cursor-pointer select-none"
@@ -1954,23 +2033,40 @@ export default function TransactionsTable({
               <button
                 type="button"
                 onClick={() => {
+                  const exportTargetMonth = printFilterType === 'month_year' ? modalSelectedMonth : 'all';
+                  const exportTargetYear = printFilterType === 'month_year' ? modalSelectedYear : 'all';
+
                   const rangeFiltered = transactions.filter(tx => {
                     const parsed = parseDateParts(tx.tanggal);
                     if (parsed !== null) {
                       const txDate = new Date(parseInt(parsed.year, 10), parsed.month, parsed.day, 12, 0, 0, 0);
-                      if (modalStartDate) {
-                        const startParts = modalStartDate.split('-');
-                        const sDate = new Date(parseInt(startParts[0], 10), parseInt(startParts[1], 10) - 1, parseInt(startParts[2], 10), 0, 0, 0, 0);
-                        if (txDate.getTime() < sDate.getTime()) return false;
-                      }
-                      if (modalEndDate) {
-                        const endParts = modalEndDate.split('-');
-                        const eDate = new Date(parseInt(endParts[0], 10), parseInt(endParts[1], 10) - 1, parseInt(endParts[2], 10), 23, 59, 59, 999);
-                        if (txDate.getTime() > eDate.getTime()) return false;
+                      
+                      if (printFilterType === 'month_year') {
+                        if (exportTargetYear !== 'all' && parsed.year !== exportTargetYear) return false;
+                        if (exportTargetMonth !== 'all') {
+                          const monthStr = String(parsed.month + 1).padStart(2, '0');
+                          if (monthStr !== exportTargetMonth) return false;
+                        }
+                      } else {
+                        if (modalStartDate) {
+                          const startParts = modalStartDate.split('-');
+                          const sDate = new Date(parseInt(startParts[0], 10), parseInt(startParts[1], 10) - 1, parseInt(startParts[2], 10), 0, 0, 0, 0);
+                          if (txDate.getTime() < sDate.getTime()) return false;
+                        }
+                        if (modalEndDate) {
+                          const endParts = modalEndDate.split('-');
+                          const eDate = new Date(parseInt(endParts[0], 10), parseInt(endParts[1], 10) - 1, parseInt(endParts[2], 10), 23, 59, 59, 999);
+                          if (txDate.getTime() > eDate.getTime()) return false;
+                        }
                       }
                       return true;
                     }
                     return false;
+                  });
+
+                  // Preserve selected sorting order
+                  rangeFiltered.sort((a, b) => {
+                    return sortOrder === 'desc' ? b.no - a.no : a.no - b.no;
                   });
 
                   const hasFiles = rangeFiltered.some(tx => tx.attachment);
@@ -1982,17 +2078,25 @@ export default function TransactionsTable({
                   // Apply range dates & set printMode
                   setStartDate(modalStartDate);
                   setEndDate(modalEndDate);
-                  setSelectedMonth(printFilterType === 'month_year' ? modalSelectedMonth : 'all');
-                  setSelectedYear(printFilterType === 'month_year' ? modalSelectedYear : 'all');
+                  setSelectedMonth(exportTargetMonth);
+                  setSelectedYear(exportTargetYear);
                   setPrintMode('attachments_only');
                   setShowAttachmentModal(false);
 
-                  // Trigger direct compiler
+                  // Trigger direct compiler with passed subsets
                   setTimeout(() => {
                     const cleanStart = modalStartDate ? modalStartDate.replace(/-/g, '') : 'Semua';
                     const cleanEnd = modalEndDate ? modalEndDate.replace(/-/g, '') : 'Semua';
                     const fileName = `Kompilasi_Lampiran_Bukti_${cleanStart}_s.d_${cleanEnd}.pdf`;
-                    handleExportPDF(fileName);
+                    handleExportPDF(
+                      fileName,
+                      rangeFiltered,
+                      modalStartDate,
+                      modalEndDate,
+                      exportTargetMonth,
+                      exportTargetYear,
+                      'attachments_only'
+                    );
                   }, 600);
                 }}
                 className="flex items-center space-x-1.5 px-4.5 py-2.5 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-[0_0_15px_rgba(59,130,246,0.2)] hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] cursor-pointer select-none"
@@ -2118,12 +2222,12 @@ export default function TransactionsTable({
             <div className="grid grid-cols-2 gap-12 mt-12 text-center text-xs text-black page-break-inside-avoid break-inside-avoid">
               <div>
                 <p className="font-semibold text-neutral-600">Mengetahui,</p>
-                <p className="font-bold text-neutral-800 mt-0.5">Ketua Ta'mir Mushola Al-Falah</p>
+                <p className="font-bold text-neutral-800 mt-0.5">Ketua DKM Al-Falah</p>
                 <div className="h-20"></div>
                 <p className="font-bold underline text-black">( _______________________ )</p>
               </div>
               <div>
-                <p className="font-semibold text-neutral-600">Jakarta, {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p className="font-semibold text-neutral-600">Bekasi, {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 <p className="font-bold text-neutral-800 mt-0.5">Bendahara Mushola Al-Falah</p>
                 <div className="h-20"></div>
                 <p className="font-bold underline text-black">( _______________________ )</p>
@@ -2284,12 +2388,12 @@ export default function TransactionsTable({
             <div className="grid grid-cols-2 gap-12 mt-12 text-center text-xs text-black page-break-inside-avoid break-inside-avoid border-t border-neutral-300 pt-8">
               <div>
                 <p className="font-semibold text-neutral-600">Mengetahui,</p>
-                <p className="font-bold text-neutral-800 mt-0.5">Ketua Ta'mir Mushola Al-Falah</p>
+                <p className="font-bold text-neutral-800 mt-0.5">Ketua DKM Al-Falah</p>
                 <div className="h-20"></div>
                 <p className="font-bold underline text-black">( _______________________ )</p>
               </div>
               <div>
-                <p className="font-semibold text-neutral-600">Jakarta, {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p className="font-semibold text-neutral-600">Bekasi, {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 <p className="font-bold text-neutral-800 mt-0.5">Bendahara Mushola Al-Falah</p>
                 <div className="h-20"></div>
                 <p className="font-bold underline text-black">( _______________________ )</p>
