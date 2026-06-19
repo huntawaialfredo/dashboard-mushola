@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
-import { Sparkles, Key, User, ShieldAlert, HelpCircle } from 'lucide-react';
+import { Sparkles, Key, User, ShieldAlert, HelpCircle, RefreshCw } from 'lucide-react';
 import { AlFalahLogo } from './AlFalahLogo';
+import { getUsersFromDb } from '../lib/firebase';
 
 interface LoginScreenProps {
   onLogin: (username: string, role: 'admin' | 'user', name: string) => void;
@@ -9,9 +10,10 @@ interface LoginScreenProps {
 export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleLoginSubmit = (e: FormEvent) => {
+  const handleLoginSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
@@ -23,39 +25,30 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       return;
     }
 
-    // Load registered users from storage
-    let registeredUsersList = [];
-    const savedRegUsers = localStorage.getItem('alfalah_registered_users');
-    if (savedRegUsers) {
-      try {
-        registeredUsersList = JSON.parse(savedRegUsers);
-      } catch (e) {
-        registeredUsersList = [];
+    setIsLoading(true);
+    try {
+      // Load registered users directly from Firestore
+      const registeredUsersList = await getUsersFromDb();
+
+      // Try finding a matching user
+      const matchedUser = registeredUsersList.find(
+        (u: any) => 
+          u.username === cleanUser && 
+          (u.password === cleanPass || 
+           (u.username === 'admin' && cleanPass === 'admin123') || 
+           ((u.username === 'tamu' || u.username === 'user') && cleanPass === 'user123'))
+      );
+
+      if (matchedUser) {
+        onLogin(matchedUser.username, matchedUser.role, matchedUser.name);
+      } else {
+        setErrorMsg('Username atau password salah! Hubungi Administrator untuk didaftarkan.');
       }
-    }
-
-    // Fallback checks
-    if (registeredUsersList.length === 0) {
-      registeredUsersList = [
-        { username: 'admin', password: 'admin123', role: 'admin', name: 'Administrator Al-Falah' },
-        { username: 'tamu', password: 'user123', role: 'user', name: 'Tamu / Umum' },
-        { username: 'user', password: 'user123', role: 'user', name: 'Tamu / Umum' }
-      ];
-    }
-
-    // Try finding a matching user
-    const matchedUser = registeredUsersList.find(
-      (u: any) => 
-        u.username === cleanUser && 
-        (u.password === cleanPass || 
-         (u.username === 'admin' && cleanPass === 'admin123') || 
-         ((u.username === 'tamu' || u.username === 'user') && cleanPass === 'user123'))
-    );
-
-    if (matchedUser) {
-      onLogin(matchedUser.username, matchedUser.role, matchedUser.name);
-    } else {
-      setErrorMsg('Username atau password salah! Gunakan akun coba yang terdaftar atau buat akun baru di menu Pengaturan.');
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg('Gagal memverifikasi akun dari database. Pastikan koneksi internet aktif.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -69,8 +62,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       <div className="w-full max-w-md z-10 transition-all duration-300">
         
         {/* Brand Header */}
-        <div className="text-center mb-8">
-          <AlFalahLogo size="custom" className="w-20.5 h-13 animate-pulse" />
+        <div className="text-center mb-8 flex flex-col items-center justify-center">
+          <AlFalahLogo size="custom" className="w-48 h-32" />
           <p className="text-[10px] text-emerald-400 font-mono mt-3 uppercase tracking-widest font-black">Sistem Kas & Keuangan Operasional</p>
         </div>
 
@@ -124,9 +117,11 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 text-white font-extrabold text-xs rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] cursor-pointer mt-2"
+              disabled={isLoading}
+              className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 text-white font-extrabold text-xs rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] cursor-pointer mt-2 flex items-center justify-center space-x-2 disabled:opacity-50"
             >
-              Masuk Sekarang
+              {isLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+              <span>{isLoading ? 'Memverifikasi...' : 'Masuk Sekarang'}</span>
             </button>
           </form>
 

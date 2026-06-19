@@ -7,7 +7,9 @@ import {
   writeBatch,
   query,
   orderBy,
-  getDocFromServer
+  getDocFromServer,
+  setDoc,
+  deleteDoc
 } from 'firebase/firestore';
 import { CashTransaction } from '../types';
 
@@ -123,6 +125,81 @@ export async function syncTransactionsToDb(transactions: CashTransaction[]): Pro
       operation: 'write',
       collection: 'transactions',
       message: error.message || "Failed to sync transactions"
+    }));
+  }
+}
+
+export interface RegisteredUser {
+  username: string;
+  role: 'admin' | 'user';
+  name: string;
+  password?: string;
+}
+
+// Fetch all registered users from Firestore, auto-seeding defaults if empty
+export async function getUsersFromDb(): Promise<RegisteredUser[]> {
+  try {
+    const ref = collection(db, 'users');
+    const snapshot = await getDocs(ref);
+    const list: RegisteredUser[] = [];
+    snapshot.forEach((docSnap) => {
+      list.push(docSnap.data() as RegisteredUser);
+    });
+    
+    if (list.length === 0) {
+      const batch = writeBatch(db);
+      const defaults: RegisteredUser[] = [
+        { username: 'admin', role: 'admin', name: 'Administrator Al-Falah', password: 'admin123' },
+        { username: 'tamu', role: 'user', name: 'Tamu / Umum', password: 'user123' },
+        { username: 'user', role: 'user', name: 'Tamu / Umum', password: 'user123' }
+      ];
+      
+      defaults.forEach((u) => {
+        const docRef = doc(db, 'users', u.username);
+        batch.set(docRef, u);
+      });
+      await batch.commit();
+      return defaults;
+    }
+    
+    return list;
+  } catch (error: any) {
+    console.error("Error fetching users from Firestore:", error);
+    // If it fails (e.g. offline or no database yet), return fallback local defaults
+    return [
+      { username: 'admin', role: 'admin', name: 'Administrator Al-Falah', password: 'admin123' },
+      { username: 'tamu', role: 'user', name: 'Tamu / Umum', password: 'user123' },
+      { username: 'user', role: 'user', name: 'Tamu / Umum', password: 'user123' }
+    ];
+  }
+}
+
+// Save/update a user in Firestore
+export async function saveUserToDb(user: RegisteredUser): Promise<void> {
+  try {
+    const docRef = doc(db, 'users', user.username.trim().toLowerCase());
+    await setDoc(docRef, cleanUndefined(user));
+  } catch (error: any) {
+    console.error("Error saving user to Firestore:", error);
+    throw new Error(JSON.stringify({
+      operation: 'write',
+      collection: 'users',
+      message: error.message || "Failed to save user"
+    }));
+  }
+}
+
+// Delete user from Firestore
+export async function deleteUserFromDb(username: string): Promise<void> {
+  try {
+    const docRef = doc(db, 'users', username.trim().toLowerCase());
+    await deleteDoc(docRef);
+  } catch (error: any) {
+    console.error("Error deleting user from Firestore:", error);
+    throw new Error(JSON.stringify({
+      operation: 'delete',
+      collection: 'users',
+      message: error.message || "Failed to delete user"
     }));
   }
 }

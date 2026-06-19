@@ -27,6 +27,23 @@ export default function App() {
   const [userSession, setUserSession] = useState<UserSession | null>(null);
   const [autoOpenPrint, setAutoOpenPrint] = useState<boolean>(false);
 
+  // Dark mode state with standard persistence
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('alfalah_theme');
+    return saved !== 'light'; // Default is true (dark mode)
+  });
+
+  // Track and apply body-level theme styling class
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.remove('light-theme');
+      localStorage.setItem('alfalah_theme', 'dark');
+    } else {
+      document.body.classList.add('light-theme');
+      localStorage.setItem('alfalah_theme', 'light');
+    }
+  }, [isDarkMode]);
+
   // Initialize and synchronise Firebase Firestore database
   const loadTransactionsFromDb = async () => {
     setIsLoading(true);
@@ -375,6 +392,8 @@ export default function App() {
         isLoading={isLoading}
         userSession={userSession}
         onLogout={handleLogout}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
       />
 
       {/* Main Content Area */}

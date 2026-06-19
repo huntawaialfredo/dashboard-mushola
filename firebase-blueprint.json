@@ -35,12 +35,41 @@
         }
       },
       "required": ["no", "tanggal", "deskripsi"]
+    },
+    "registeredUser": {
+      "title": "RegisteredUser",
+      "description": "Akun pengguna terdaftar Sistem Pembukuan Al-Falah",
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "Username unik untuk login (huruf kecil)"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "user"],
+          "description": "Hak akses akun (admin atau user biasa)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Nama lengkap pengguna"
+        },
+        "password": {
+          "type": "string",
+          "description": "Kata sandi masuk"
+        }
+      },
+      "required": ["username", "role", "name", "password"]
     }
   },
   "firestore": {
     "transactions": {
       "schema": "transaction",
       "description": "Koleksi seluruh transaksi kas Al-Falah"
+    },
+    "users": {
+      "schema": "registeredUser",
+      "description": "Daftar kredensial akun pengguna terdaftar"
     }
   }
 }

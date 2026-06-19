@@ -13,9 +13,11 @@ import {
   Lock,
   LogOut,
   User,
-  Settings
+  Settings,
+  Sun,
+  Moon
 } from 'lucide-react';
-import { AlFalahLogo } from './AlFalahLogo';
+import { AlFalahLogo } from './AlFalahLogo'; // Base font settings in tailwind override might not apply. Adding custom font family fallback for bahnschrift or using system-sans.
 
 interface SidebarProps {
   activeTab: string;
@@ -25,6 +27,8 @@ interface SidebarProps {
   isLoading: boolean;
   userSession: { username: string; role: 'admin' | 'user'; name: string } | null;
   onLogout: () => void;
+  isDarkMode: boolean;
+  onToggleDarkMode: () => void;
 }
 
 export default function Sidebar({ 
@@ -34,7 +38,9 @@ export default function Sidebar({
   onRefresh,
   isLoading,
   userSession,
-  onLogout
+  onLogout,
+  isDarkMode,
+  onToggleDarkMode
 }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -65,15 +71,36 @@ export default function Sidebar({
       {/* Mobile Top Bar */}
       <div id="mobile-nav" className="flex items-center justify-between px-4 py-3 bg-[#0a0c18] text-white lg:hidden border-b border-slate-800/50 print:hidden">
         <div className="flex items-center space-x-2.5">
-          <div className="p-1.5 bg-slate-900 border border-amber-500/20 rounded-lg shadow-[0_0_10px_rgba(212,165,85,0.2)] flex items-center justify-center">
-            <AlFalahLogo iconOnly size="custom" className="w-6 h-6 animate-pulse" />
+          <div className="p-1 px-1.5 bg-[#0e1124] border border-amber-500/25 rounded-2xl flex items-center justify-center shadow-[0_0_12px_rgba(212,165,85,0.15)] w-11 h-11 flex-shrink-0">
+            <AlFalahLogo iconOnly size="custom" className="w-9 h-4.5" isDarkMode={isDarkMode} />
           </div>
           <div>
-            <h1 className="text-xs font-black tracking-[0.12em] text-[#d4a555] font-serif uppercase leading-none">DKM AL-FALAH</h1>
-            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 font-mono">VICTORIA PERMAI</p>
+            <h1 className={`text-[12.5px] font-bold tracking-[0.14em] uppercase leading-none font-serif ${
+              isDarkMode 
+                ? 'text-amber-400 drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)]' 
+                : 'text-amber-700'
+            }`}>
+              DKM AL-FALAH
+            </h1>
+            <p className={`text-[8.5px] font-semibold tracking-[0.2em] uppercase font-sans mt-2 leading-none ${
+              isDarkMode 
+                ? 'text-slate-400' 
+                : 'text-slate-600'
+            }`}>
+              VICTORIA PERMAI
+            </p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
+          {/* Mobile Dark Mode Toggle */}
+          <button 
+            type="button"
+            onClick={onToggleDarkMode}
+            className="p-2 rounded-lg bg-slate-800/40 text-slate-350 hover:text-white transition-all cursor-pointer"
+            title={isDarkMode ? "Aktifkan Mode Terang" : "Aktifkan Mode Gelap"}
+          >
+            {isDarkMode ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-indigo-400" />}
+          </button>
           <button 
             onClick={onRefresh}
             disabled={isLoading}
@@ -108,13 +135,25 @@ export default function Sidebar({
       >
         {/* Sidebar Header */}
         <div className="p-6 border-b border-slate-800/50">
-          <div className="flex items-center space-x-3.5">
-            <div className="p-1.5 bg-slate-900 border border-amber-500/20 rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(212,165,85,0.2)]">
-              <AlFalahLogo iconOnly size="custom" className="w-7 h-7 animate-pulse" />
+          <div className="flex items-center space-x-3.5 mb-1">
+            <div className="p-1 px-1.5 bg-[#0e1124] border border-amber-500/25 rounded-2xl flex items-center justify-center shadow-[0_0_15px_rgba(212,165,85,0.15)] w-12 h-12 flex-shrink-0">
+              <AlFalahLogo iconOnly size="custom" className="w-10 h-5" isDarkMode={isDarkMode} />
             </div>
             <div>
-              <h1 className="font-black text-xs tracking-[0.12em] text-[#d4a555] font-serif uppercase leading-tight">DKM AL-FALAH</h1>
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 font-mono">VICTORIA PERMAI</p>
+              <h1 className={`text-[13.5px] font-bold tracking-[0.14em] uppercase leading-none font-serif ${
+                isDarkMode 
+                  ? 'text-amber-400 drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.6)]' 
+                  : 'text-amber-700'
+              }`}>
+                DKM AL-FALAH
+              </h1>
+              <p className={`text-[8.5px] font-semibold tracking-[0.2em] uppercase font-sans mt-2.5 leading-none ${
+                isDarkMode 
+                  ? 'text-slate-400' 
+                  : 'text-slate-600'
+              }`}>
+                VICTORIA PERMAI
+              </p>
             </div>
           </div>
           
@@ -126,7 +165,7 @@ export default function Sidebar({
                 <span className={`relative inline-flex rounded-full h-2 w-2 bg-emerald-500`}></span>
               </span>
               <span className="text-xs font-semibold text-slate-300">
-                {isSheetConnected ? 'Database: Synced' : 'Database: Firebase Cloud'}
+                {isSheetConnected ? 'Database: Firebase Synced' : 'Database: Firebase Cloud'}
               </span>
             </div>
             <button
@@ -175,6 +214,26 @@ export default function Sidebar({
         {/* Sidebar Footer (Profile & Logout) */}
         {userSession && (
           <div className="p-4 border-t border-slate-800/50 bg-[#07080f]/60 space-y-3 shrink-0">
+            {/* Desktop Theme Switch Button */}
+            <button
+              type="button"
+              onClick={onToggleDarkMode}
+              className="flex items-center justify-center space-x-2.5 w-full py-2 bg-slate-950/40 hover:bg-slate-800/20 text-slate-350 hover:text-white border border-slate-850 hover:border-slate-800 rounded-xl text-xs font-bold transition-all duration-200 active:scale-[0.98] cursor-pointer"
+              title={isDarkMode ? "Aktifkan Mode Terang" : "Aktifkan Mode Gelap"}
+            >
+              {isDarkMode ? (
+                <>
+                  <Sun className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Mode Terang</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Mode Gelap</span>
+                </>
+              )}
+            </button>
+
             <div className="flex items-center space-x-3">
               <div className="w-9 h-9 rounded-xl border border-slate-800 flex items-center justify-center font-black text-xs text-white shadow-inner shrink-0 bg-gradient-to-tr from-slate-950 to-slate-805">
                 DK

@@ -13,8 +13,13 @@ import {
   User, 
   Info, 
   AlertCircle,
-  Trash2
+  Trash2,
+  Edit,
+  Eye,
+  EyeOff,
+  X
 } from 'lucide-react';
+import { getUsersFromDb, saveUserToDb, deleteUserFromDb, RegisteredUser } from '../lib/firebase';
 
 interface SettingsViewProps {
   gasUrl: string;
@@ -23,13 +28,6 @@ interface SettingsViewProps {
   onTestUrl: (url: string) => Promise<boolean>;
   isTesting: boolean;
   currentUser: { username: string; role: 'admin' | 'user'; name: string } | null;
-}
-
-interface RegisteredUser {
-  username: string;
-  role: 'admin' | 'user';
-  name: string;
-  password?: string;
 }
 
 export default function SettingsView({
@@ -55,36 +53,57 @@ export default function SettingsView({
   const [regSuccess, setRegSuccess] = useState<string | null>(null);
   const [regError, setRegError] = useState<string | null>(null);
 
+  // States for editing accounts & viewing passwords
+  const [editingUser, setEditingUser] = useState<RegisteredUser | null>(null);
+  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
+
   // Loaded registered users
   const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>([]);
+
+  const startEditUser = (user: RegisteredUser) => {
+    setEditingUser(user);
+    setRegUsername(user.username);
+    setRegName(user.name);
+    setRegPassword(user.password || '');
+    setRegRole(user.role);
+    setRegSuccess(null);
+    setRegError(null);
+  };
+
+  const cancelEditUser = () => {
+    setEditingUser(null);
+    setRegUsername('');
+    setRegName('');
+    setRegPassword('');
+    setRegRole('user');
+    setRegSuccess(null);
+    setRegError(null);
+  };
+
+  const togglePasswordVisibility = (username: string) => {
+    setVisiblePasswords(prev => ({
+      ...prev,
+      [username]: !prev[username]
+    }));
+  };
 
   // Sync state input when gasUrl changes externally
   useEffect(() => {
     setInputUrl(gasUrl);
   }, [gasUrl]);
 
-  // Load existing users on mount
+  // Load existing users on mount from Firestore
   useEffect(() => {
-    const savedRegUsers = localStorage.getItem('alfalah_registered_users');
-    if (savedRegUsers) {
+    const loadUsers = async () => {
       try {
-        setRegisteredUsers(JSON.parse(savedRegUsers));
-      } catch (e) {
-        initializeDefaultUsers();
+        const list = await getUsersFromDb();
+        setRegisteredUsers(list);
+      } catch (err) {
+        console.error("Gagal mengambil data user dari database:", err);
       }
-    } else {
-      initializeDefaultUsers();
-    }
+    };
+    loadUsers();
   }, []);
-
-  const initializeDefaultUsers = () => {
-    const defaults: RegisteredUser[] = [
-      { username: 'admin', role: 'admin', name: 'Administrator Al-Falah' },
-      { username: 'tamu', role: 'user', name: 'Tamu / Umum' }
-    ];
-    localStorage.setItem('alfalah_registered_users', JSON.stringify(defaults));
-    setRegisteredUsers(defaults);
-  };
 
   const handleConnectSheets = async (e: FormEvent) => {
     e.preventDefault();
@@ -121,7 +140,7 @@ export default function SettingsView({
     }
   };
 
-  const handleRegisterUser = (e: FormEvent) => {
+  const handleRegisterUser = async (e: FormEvent) => {
     e.preventDefault();
     setRegSuccess(null);
     setRegError(null);
@@ -131,7 +150,7 @@ export default function SettingsView({
     const cleanPassword = regPassword;
 
     if (!cleanUsername || !cleanName || !cleanPassword) {
-      setRegError('Mohon isi semua field pendaftaran!');
+      setRegError('Mohon isi semua field!');
       return;
     }
 
@@ -145,35 +164,49 @@ export default function SettingsView({
       return;
     }
 
-    // Check if user already exists
-    const userExists = registeredUsers.some(u => u.username === cleanUsername);
-    if (userExists) {
-      setRegError(`Username "${cleanUsername}" sudah digunakan oleh akun lain.`);
-      return;
+    // Check if user already exists (only if we are not editing)
+    if (!editingUser) {
+      const userExists = registeredUsers.some(u => u.username === cleanUsername);
+      if (userExists) {
+        setRegError(`Username "${cleanUsername}" sudah digunakan oleh akun lain.`);
+        return;
+      }
     }
 
-    // Create new user structure (including password in stored item)
-    const newUser: RegisteredUser = {
+    // Create or update user structure (including password in stored item)
+    const targetUser: RegisteredUser = {
       username: cleanUsername,
       role: regRole,
       name: cleanName,
       password: cleanPassword
     };
 
-    const updatedList = [...registeredUsers, newUser];
-    localStorage.setItem('alfalah_registered_users', JSON.stringify(updatedList));
-    setRegisteredUsers(updatedList);
-
-    setRegSuccess(`Sukses mendaftarkan akun "${cleanUsername}" sebagai ${regRole.toUpperCase()}!`);
-    
-    // Clear inputs
-    setRegName('');
-    setRegUsername('');
-    setRegPassword('');
-    setRegRole('user');
+    try {
+      await saveUserToDb(targetUser);
+      
+      let updatedList: RegisteredUser[];
+      if (editingUser) {
+        updatedList = registeredUsers.map(u => u.username === cleanUsername ? targetUser : u);
+        setRegSuccess(`Sukses memperbarui akun "${cleanUsername}"!`);
+      } else {
+        updatedList = [...registeredUsers, targetUser];
+        setRegSuccess(`Sukses mendaftarkan akun "${cleanUsername}" sebagai ${regRole.toUpperCase()}!`);
+      }
+      setRegisteredUsers(updatedList);
+      
+      // Clear inputs and reset edit state
+      setRegName('');
+      setRegUsername('');
+      setRegPassword('');
+      setRegRole('user');
+      setEditingUser(null);
+    } catch (err: any) {
+      console.error(err);
+      setRegError(`Gagal menyimpan data akun ke database. Harap periksa koneksi Firestore Anda.`);
+    }
   };
 
-  const handleDeleteUser = (usernameToDelete: string) => {
+  const handleDeleteUser = async (usernameToDelete: string) => {
     if (usernameToDelete === 'admin' || usernameToDelete === 'tamu') {
       alert('Akun bawaan sistem tidak diperbolehkan untuk dihapus!');
       return;
@@ -184,9 +217,14 @@ export default function SettingsView({
       return;
     }
 
-    const filtered = registeredUsers.filter(u => u.username !== usernameToDelete);
-    localStorage.setItem('alfalah_registered_users', JSON.stringify(filtered));
-    setRegisteredUsers(filtered);
+    try {
+      await deleteUserFromDb(usernameToDelete);
+      const filtered = registeredUsers.filter(u => u.username !== usernameToDelete);
+      setRegisteredUsers(filtered);
+    } catch (err: any) {
+      console.error(err);
+      alert('Gagal menghapus akun dari database. Harap coba lagi.');
+    }
   };
 
   return (
@@ -316,9 +354,22 @@ export default function SettingsView({
           <div className="lg:col-span-1 space-y-6">
             
             <div className="bg-[#111425] p-5 rounded-2xl border border-slate-800 shadow-2xl space-y-4">
-              <div className="flex items-center space-x-2 pb-3 border-b border-slate-800/50">
-                <UserPlus className="w-5 h-5 text-emerald-450 animate-pulse" />
-                <h3 className="font-extrabold text-sm text-white">Buat Akun Baru</h3>
+              <div className="flex items-center space-x-2 pb-3 border-b border-slate-800/50 justify-between">
+                <div className="flex items-center space-x-2">
+                  {editingUser ? (
+                    <Edit className="w-5 h-5 text-amber-500 animate-pulse" />
+                  ) : (
+                    <UserPlus className="w-5 h-5 text-emerald-450 animate-pulse" />
+                  )}
+                  <h3 className="font-extrabold text-sm text-white">
+                    {editingUser ? 'Edit Akun Terdaftar' : 'Buat Akun Baru'}
+                  </h3>
+                </div>
+                {editingUser && (
+                  <span className="text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded">
+                    Mode Edit
+                  </span>
+                )}
               </div>
 
               <form onSubmit={handleRegisterUser} className="space-y-4">
@@ -348,11 +399,17 @@ export default function SettingsView({
                   <input
                     type="text"
                     required
+                    disabled={!!editingUser}
                     placeholder="Contoh: syaf, budi, admin_masjid"
                     value={regUsername}
                     onChange={(e) => setRegUsername(e.target.value)}
-                    className="w-full text-xs font-mono font-bold px-4 py-2.5 rounded-xl border border-slate-800 bg-[#0a0c18] text-white focus:outline-none focus:border-emerald-500"
+                    className={`w-full text-xs font-mono font-bold px-4 py-2.5 rounded-xl border border-slate-800 bg-[#0a0c18] text-white focus:outline-none focus:border-emerald-500 ${
+                      editingUser ? 'opacity-50 cursor-not-allowed border-amber-500/20 text-amber-200' : ''
+                    }`}
                   />
+                  {editingUser && (
+                    <p className="text-[10px] text-amber-500/80 font-bold mt-1">Username tidak dapat diubah.</p>
+                  )}
                 </div>
 
                 {/* Password input */}
@@ -362,7 +419,7 @@ export default function SettingsView({
                     <span>Password</span>
                   </label>
                   <input
-                    type="password"
+                    type="text"
                     required
                     placeholder="Minimal 5 karakter"
                     value={regPassword}
@@ -404,12 +461,24 @@ export default function SettingsView({
                 )}
 
                 {/* Button register trigger */}
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all cursor-pointer mt-2"
-                >
-                  Registrasikan Akun
-                </button>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="submit"
+                    className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all cursor-pointer"
+                  >
+                    {editingUser ? 'Perbarui Akun' : 'Registrasikan Akun'}
+                  </button>
+                  {editingUser && (
+                    <button
+                      type="button"
+                      onClick={cancelEditUser}
+                      className="py-3 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-extrabold text-xs rounded-xl border border-slate-700 transition-all cursor-pointer flex items-center justify-center"
+                      title="Batal Edit"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
 
               </form>
 
@@ -436,13 +505,16 @@ export default function SettingsView({
                 {registeredUsers.map((user) => {
                   const isCurrent = user.username === currentUser?.username;
                   const isBuiltIn = user.username === 'admin' || user.username === 'tamu';
+                  const isAdmin = currentUser?.role === 'admin';
+                  const showPass = !!visiblePasswords[user.username];
+
                   return (
                     <div 
                       key={user.username} 
-                      className="py-4 flex items-center justify-between group transition-colors hover:bg-[#111425]/40"
+                      className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group transition-colors hover:bg-[#111425]/40 px-2 rounded-xl"
                     >
                       <div className="flex items-center space-x-3.5">
-                        <div className="w-9 h-9 rounded-xl border border-slate-800 flex items-center justify-center font-black text-xs text-white bg-slate-950 shadow-inner">
+                        <div className="w-9 h-9 rounded-xl border border-slate-800 flex items-center justify-center font-black text-xs text-white bg-slate-950 shadow-inner shrink-0">
                           {user.name.slice(0, 2).toUpperCase()}
                         </div>
                         <div>
@@ -454,32 +526,71 @@ export default function SettingsView({
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center space-x-2 mt-0.5">
-                            <span className="text-[10px] text-slate-400 font-mono font-bold">username: <span className="text-emerald-450">{user.username}</span></span>
-                            <span className="text-slate-700 font-mono text-[10px]">•</span>
-                            <span className={`text-[8px] font-black uppercase tracking-wider ${
-                              user.role === 'admin' ? 'text-rose-400' : 'text-blue-400'
+                          
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-[10px] text-slate-400">
+                            <span className="font-mono font-bold">username: <span className="text-emerald-450">{user.username}</span></span>
+                            <span className="text-slate-700 font-mono">•</span>
+                            <span className={`text-[8px] font-black uppercase tracking-wider px-1 py-0.2 rounded ${
+                              user.role === 'admin' 
+                                ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' 
+                                : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                             }`}>
                               {user.role === 'admin' ? 'ADMINISTRATOR' : 'USER'}
                             </span>
                           </div>
+
+                          {/* Password visibility toggler for admin account */}
+                          {isAdmin && (
+                            <div className="flex items-center space-x-1.5 mt-2 text-[10px] text-slate-400 bg-slate-950/40 px-2.5 py-1 rounded-lg border border-slate-800/40 max-w-max">
+                              <Key className="w-3 h-3 text-amber-500" />
+                              <span className="font-semibold text-slate-500">Password:</span>
+                              <span className="font-mono font-bold text-amber-200">
+                                {showPass ? user.password || '******' : '••••••••'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => togglePasswordVisibility(user.username)}
+                                className="p-0.5 text-slate-500 hover:text-white transition-colors cursor-pointer ml-1"
+                                title={showPass ? "Sembunyikan Password" : "Lihat Password"}
+                              >
+                                {showPass ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      {/* Delete user action */}
-                      {!isBuiltIn && !isCurrent ? (
-                        <button
-                          onClick={() => handleDeleteUser(user.username)}
-                          className="p-2 rounded-lg bg-slate-900/60 hover:bg-rose-500/10 text-slate-500 hover:text-rose-450 border border-slate-850 hover:border-rose-500/25 transition-all cursor-pointer shadow-inner"
-                          title="Hapus Pengguna"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      ) : isBuiltIn ? (
-                        <span className="text-[9px] uppercase font-bold tracking-wider text-slate-600 bg-slate-950 border border-slate-800/80 px-2 py-0.5 rounded font-mono">
-                          Bawaan Sistem
-                        </span>
-                      ) : null}
+                      {/* Actions panel */}
+                      <div className="flex items-center space-x-2 self-end sm:self-auto">
+                        {/* Edit action for admin users */}
+                        {isAdmin && (
+                          <button
+                            onClick={() => startEditUser(user)}
+                            className={`p-2 rounded-lg bg-slate-900/60 hover:bg-amber-500/10 text-slate-500 hover:text-amber-500 border border-slate-850 hover:border-amber-500/20 transition-all cursor-pointer shadow-inner ${
+                              editingUser?.username === user.username ? 'border-amber-500/60 text-amber-500 bg-amber-500/5' : ''
+                            }`}
+                            title="Edit Pengguna"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        )}
+
+                        {/* Delete action */}
+                        {!isBuiltIn && !isCurrent ? (
+                          <button
+                            onClick={() => handleDeleteUser(user.username)}
+                            className="p-2 rounded-lg bg-slate-900/60 hover:bg-rose-500/10 text-slate-500 hover:text-rose-450 border border-slate-850 hover:border-rose-500/25 transition-all cursor-pointer shadow-inner"
+                            title="Hapus Pengguna"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        ) : isBuiltIn ? (
+                          <span className="text-[9px] uppercase font-bold tracking-wider text-slate-500 bg-slate-950/80 border border-slate-800/80 px-2 py-1 rounded font-mono">
+                            Bawaan Sistem
+                          </span>
+                        ) : null}
+                      </div>
+
                     </div>
                   );
                 })}
