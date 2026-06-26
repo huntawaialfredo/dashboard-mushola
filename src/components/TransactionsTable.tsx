@@ -820,26 +820,76 @@ export default function TransactionsTable({
 
       } else {
         // --- ATTACHMENTS_ONLY MODE (DEDICATED COMPILATION) ---
-        let currentY = 15;
+        // Rich, dark imperial navy-slate banner background
+        doc.setFillColor(11, 28, 45);
+        doc.rect(0, 0, pageWidth, 44, 'F');
 
-        // Letter Head Cop
+        // Central coordinates for the gorgeous Golden Mosque Dome Logo
+        const cx = pageWidth / 2;
+        const cy = 13;
+
+        // 1. Double crescent path (Outer Gold crescent moon outline)
+        doc.setFillColor(212, 165, 85); // elegant warm gold
+        doc.circle(cx - 3.2, cy - 2.8, 4.4, 'F');
+        doc.setFillColor(11, 28, 45); // match bg mask
+        doc.circle(cx - 2.0, cy - 2.8, 4.1, 'F');
+
+        // 2. Dome outline curves (Golden Islamic geometric style archs)
+        doc.setDrawColor(212, 165, 85);
+        doc.setLineWidth(0.45);
+        
+        // Base structure of the dome symbol
+        doc.line(cx - 6.5, cy + 5, cx + 6.5, cy + 5);
+        
+        // Dynamic arch curves intersecting in a beautiful point
+        doc.line(cx - 6.5, cy + 5, cx, cy - 1);
+        doc.line(cx + 6.5, cy + 5, cx, cy - 1);
+        
+        // Inner layered arch lines matching the luxury logo
+        doc.line(cx - 3.8, cy + 5, cx, cy + 1.8);
+        doc.line(cx + 3.8, cy + 5, cx, cy + 1.8);
+        
+        // Mini spires
+        doc.line(cx, cy - 1, cx, cy - 3.5);
+
+        // Solid gold center accent star/stone
+        doc.setFillColor(212, 165, 85);
+        doc.circle(cx, cy - 3.8, 0.45, 'F');
+
+        // Write Institution Text: "DKM AL-FALAH" in large serif-style display title
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(18);
-        doc.setTextColor(0, 0, 0);
-        doc.text('MUSHOLA AL-FALAH', pageWidth / 2, currentY, { align: 'center' });
-        
-        currentY += 6;
+        doc.setFontSize(23);
+        doc.setTextColor(212, 165, 85); // Solid premium gold
+        doc.text('DKM AL-FALAH', pageWidth / 2, 28, { align: 'center' });
+
+        // Subtitle / Address in thin light warm gold
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8.5);
-        doc.setTextColor(75, 85, 99);
-        doc.text('Sekretariat: Jl. Raya Al-Falah No. 12, Kel. Palmerah, Jakarta Barat, 11480', pageWidth / 2, currentY, { align: 'center' });
+        doc.setFontSize(9.5);
+        doc.setTextColor(220, 210, 190); // soft bone-gold
+        doc.text('Perumahan Victoria Permai, Babelan Kota, Babelan, Bekasi 17610', pageWidth / 2, 34, { align: 'center' });
+
+        // Thin Golden Horizontal Divider Line in matching gold
+        doc.setLineWidth(0.28);
+        doc.setDrawColor(212, 165, 85);
         
-        currentY += 4.5;
-        doc.setLineWidth(0.5);
-        doc.setDrawColor(0, 0, 0);
-        doc.line(margin, currentY, pageWidth - margin, currentY);
-        
-        currentY += 8;
+        // Draw double side lines with centered diamond and corner stars
+        doc.line(margin + 5, 39.5, pageWidth / 2 - 5, 39.5);
+        doc.line(pageWidth / 2 + 5, 39.5, pageWidth - margin - 5, 39.5);
+
+        // Center golden diamond separator
+        doc.setFillColor(212, 165, 85);
+        doc.triangle(pageWidth / 2, 38.5, pageWidth / 2 - 1.2, 39.5, pageWidth / 2 + 1.2, 39.5, 'FD');
+        doc.triangle(pageWidth / 2, 40.5, pageWidth / 2 - 1.2, 39.5, pageWidth / 2 + 1.2, 39.5, 'FD');
+
+        // Side boundary stars / mini 8-point stars
+        // Left offset star
+        doc.triangle(margin + 3, 39.0, margin + 2.5, 39.5, margin + 3.5, 39.5, 'FD');
+        doc.triangle(margin + 3, 40.0, margin + 2.5, 39.5, margin + 3.5, 39.5, 'FD');
+        // Right offset star
+        doc.triangle(pageWidth - margin - 3, 39.0, pageWidth - margin - 3.5, 39.5, pageWidth - margin - 2.5, 39.5, 'FD');
+        doc.triangle(pageWidth - margin - 3, 40.0, pageWidth - margin - 3.5, 39.5, pageWidth - margin - 2.5, 39.5, 'FD');
+
+        let currentY = 53;
 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
@@ -1080,24 +1130,24 @@ export default function TransactionsTable({
             <div className="flex items-center bg-[#0a0c18] p-1 rounded-xl border border-slate-800/80">
               <button
                 onClick={() => { setFilterType('all'); setCurrentPage(1); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  filterType === 'all' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  filterType === 'all' ? 'filter-tab-all-active shadow-sm' : 'filter-tab-all-inactive'
                 }`}
               >
                 Semua ({transactions.length})
               </button>
               <button
                 onClick={() => { setFilterType('pemasukan'); setCurrentPage(1); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  filterType === 'pemasukan' ? 'bg-emerald-500/20 text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-emerald-500'
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  filterType === 'pemasukan' ? 'filter-tab-pemasukan-active shadow-sm' : 'filter-tab-pemasukan-inactive'
                 }`}
               >
                 Pemasukan
               </button>
               <button
                 onClick={() => { setFilterType('pengeluaran'); setCurrentPage(1); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  filterType === 'pengeluaran' ? 'bg-rose-500/20 text-rose-400 shadow-sm' : 'text-slate-400 hover:text-rose-400'
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  filterType === 'pengeluaran' ? 'filter-tab-pengeluaran-active shadow-sm' : 'filter-tab-pengeluaran-inactive'
                 }`}
               >
                 Pengeluaran
@@ -1247,22 +1297,22 @@ export default function TransactionsTable({
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#0a0c18] text-slate-350 font-black text-xs uppercase tracking-wider border-b border-slate-800/50">
+              <tr className="bg-table-header text-table-header-text font-black text-xs uppercase tracking-wider border-b border-table-border">
                 <th className="py-4 px-5 text-center font-bold w-16">No</th>
-                <th className="py-4 px-4 w-32 border-l border-slate-800/20">Tanggal</th>
-                <th className="py-4 px-6 border-l border-slate-800/20">Deskripsi</th>
-                <th className="py-4 px-4 text-center border-l border-slate-800/20 w-28">Bukti</th>
-                <th className="py-4 px-6 text-right border-l border-slate-800/20">Pemasukan</th>
-                <th className="py-4 px-6 text-right border-l border-slate-800/20">Pengeluaran</th>
-                <th className="py-4 px-6 text-right bg-[#0c0e1a] text-amber-400 font-bold w-44 border-l border-slate-800/30">Saldo</th>
+                <th className="py-4 px-4 w-32 border-l border-table-border-subtle">Tanggal</th>
+                <th className="py-4 px-6 border-l border-table-border-subtle">Deskripsi</th>
+                <th className="py-4 px-4 text-center border-l border-table-border-subtle w-28">Bukti</th>
+                <th className="py-4 px-6 text-right border-l border-table-border-subtle">Pemasukan</th>
+                <th className="py-4 px-6 text-right border-l border-table-border-subtle">Pengeluaran</th>
+                <th className="py-4 px-6 text-right bg-table-saldo-header text-table-saldo-header-text font-bold w-44 border-l border-table-border-subtle">Saldo</th>
                 {isAdministrator && (
-                  <th className="py-4 px-1.5 text-center border-l border-slate-800/20 w-16 text-slate-400 font-bold text-[11px]">
+                  <th className="py-4 px-1.5 text-center border-l border-table-border-subtle w-16 text-slate-400 font-bold text-[11px]">
                     Kelola
                   </th>
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/40">
+            <tbody className="divide-y divide-table-border">
               {paginatedTransactions.map((tx, index) => {
                 const isSelected = selectedTxNo === tx.no;
                 return (
@@ -1279,22 +1329,22 @@ export default function TransactionsTable({
                       isSelected 
                         ? 'bg-amber-500/5 hover:bg-amber-500/10 border-l-4 border-l-amber-500 font-semibold' 
                         : index % 2 === 1 
-                          ? 'bg-[#0a0c18]/30 hover:bg-slate-800/25' 
-                          : 'bg-[#111425] hover:bg-slate-800/25'
+                          ? 'bg-table-row-odd bg-table-row-hover' 
+                          : 'bg-table-row-even bg-table-row-hover'
                     }`}
                   >
                     <td className="py-3.5 px-5 text-center font-mono text-slate-400 text-xs font-semibold">
                       {(currentPage - 1) * itemsPerPage + index + 1}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-slate-400 text-xs font-semibold border-l border-slate-800/20">
+                    <td className="py-3.5 px-4 font-mono text-slate-400 text-xs font-semibold border-l border-table-border-subtle">
                       {formatDateOnly(tx.tanggal)}
                     </td>
-                    <td className="py-3.5 px-6 text-sm font-bold text-white border-l border-slate-800/20">
+                    <td className="py-3.5 px-6 text-sm font-bold text-white border-l border-table-border-subtle">
                       <span className="block truncate max-w-sm" title={tx.deskripsi}>
                         {tx.deskripsi}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-center border-l border-slate-800/20">
+                    <td className="py-3.5 px-4 text-center border-l border-table-border-subtle">
                       {tx.attachment ? (
                         <button
                           onClick={(e) => {
@@ -1314,13 +1364,13 @@ export default function TransactionsTable({
                         <span className="text-slate-600 font-mono text-xs font-semibold">-</span>
                       )}
                     </td>
-                    <td className="py-3.5 px-6 text-right font-mono text-xs font-extrabold text-emerald-400 border-l border-slate-800/20">
+                    <td className="py-3.5 px-6 text-right font-mono text-xs font-extrabold text-emerald-400 border-l border-table-border-subtle">
                       {tx.pemasukan ? formatRupiah(tx.pemasukan) : '-'}
                     </td>
-                    <td className="py-3.5 px-6 text-right font-mono text-xs font-extrabold text-rose-400 border-l border-slate-800/20">
+                    <td className="py-3.5 px-6 text-right font-mono text-xs font-extrabold text-rose-400 border-l border-table-border-subtle">
                       {tx.pengeluaran ? formatRupiah(tx.pengeluaran) : '-'}
                     </td>
-                    <td className="py-3.5 px-6 text-right font-mono text-xs font-black bg-[#0c0e1a]/80 text-amber-300 border-l border-slate-800/30">
+                    <td className="py-3.5 px-6 text-right font-mono text-xs font-black bg-table-saldo text-table-saldo-text border-l border-table-border-highlight">
                       {formatRupiah(tx.saldo)}
                     </td>
                     {isAdministrator && (
@@ -2115,11 +2165,38 @@ export default function TransactionsTable({
         
         {printMode === 'all' ? (
           <>
-            {/* Kop Surat (Institutional Header for Musholla Al-Falah) */}
-            <div className="text-center pb-5 border-b-4 border-double border-black relative">
-              <h1 className="text-2xl font-black tracking-wide uppercase text-black">MUSHOLA AL-FALAH</h1>
-              <p className="text-xs text-neutral-600 font-medium mt-1">Sekretariat: Jl. Raya Al-Falah No. 12, Kel. Palmerah, Jakarta Barat, 11480</p>
-              <p className="text-[10px] text-neutral-500 font-mono mt-0.5">Email: info@musholaalfalah.my.id | Telp: +62 821-1234-5678</p>
+            {/* Elegant Institutional Kop Surat Banner */}
+            <div className="w-full bg-[#0b1c2d] text-center py-6 px-4 rounded-xl relative overflow-hidden shadow-md flex flex-col items-center justify-center mb-6">
+              {/* Central Golden Dome & Crescent Icon */}
+              <div className="relative w-16 h-12 flex items-center justify-center text-[#d4a555] mb-1">
+                {/* Crescent Moon */}
+                <span className="absolute text-4xl select-none leading-none -translate-x-3 -translate-y-2.5 rotate-[-15deg] font-serif">☾</span>
+                {/* Dome Outline */}
+                <svg className="w-10 h-10 -translate-y-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3,19 L21,19" />
+                  <path d="M4,19 C4,12 8,8 12,8 C16,8 20,12 20,19" />
+                  <path d="M7,19 C7,14 9.5,11.5 12,11.5 C14.5,11.5 17,14 17,19" />
+                  <path d="M12,8 L12,4" />
+                  <circle cx="12" cy="3.5" r="0.6" fill="currentColor" />
+                </svg>
+              </div>
+
+              {/* Title & Subtitle */}
+              <h1 className="text-xl font-extrabold tracking-[0.1em] uppercase text-[#d4a555] font-sans m-0 leading-tight">
+                DKM AL-FALAH
+              </h1>
+              <p className="text-[10px] text-[#dcd2be] font-bold mt-1.5 mb-0 max-w-xl leading-normal font-sans">
+                Perumahan Victoria Permai, Babelan Kota, Babelan, Bekasi 17610
+              </p>
+
+              {/* Decorative Divider */}
+              <div className="w-full max-w-lg flex items-center justify-between mt-3.5 text-[#d4a555] font-sans px-4">
+                <span className="text-[7px] opacity-90">◆</span>
+                <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#d4a555] to-transparent mx-2"></div>
+                <span className="text-[9px] mx-1">◆</span>
+                <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#d4a555] to-transparent mx-2"></div>
+                <span className="text-[7px] opacity-90">◆</span>
+              </div>
             </div>
 
             {/* Laporan Title */}
@@ -2237,49 +2314,61 @@ export default function TransactionsTable({
             {/* Lampiran Bukti Transaksi section at the bottom of printed report */}
             {processedTransactions.some(tx => tx.attachment) && (
               <div className="mt-16 border-t-2 border-dashed border-neutral-400 pt-8 break-before-page page-break-before">
-                <h3 className="text-xs font-black text-black uppercase tracking-wider mb-3 border-b border-black pb-1 flex items-center justify-between">
-                  <span>Lampiran Lampiran Bukti Kas Fisik (Diurutkan Sesuai Jurnal)</span>
+                <h3 className="text-xs font-black text-black uppercase tracking-wider mb-2 border-b border-black pb-1 flex items-center justify-between">
+                  <span>Lampiran Bukti Kas Fisik (Diurutkan Sesuai Jurnal)</span>
                   <span className="text-[9px] font-mono font-medium text-neutral-500 italic uppercase">Buku Kas Al-Falah</span>
                 </h3>
-                <p className="text-[10px] text-neutral-500 mb-5 leading-normal">
-                  Berikut ini adalah berkas pendukung transaksi (seperti kuitansi, struk nota belanjas, bukti bayar digital) yang diarsipkan secara elektronik.
+                <p className="text-[10px] text-neutral-500 mb-4 leading-normal">
+                  Berikut ini adalah berkas pendukung transaksi (kuitansi, struk nota belanja, bukti bayar digital) yang diarsipkan secara elektronik.
                 </p>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="divide-y divide-neutral-300 border-t border-b border-neutral-300">
                   {processedTransactions.filter(tx => tx.attachment).map((tx, idx) => (
-                    <div key={`print-attach-${tx.no}-${idx}`} className="border border-neutral-300 rounded p-4 flex flex-col justify-between bg-neutral-50 page-break-inside-avoid break-inside-avoid min-h-[220px]">
-                      <div>
-                        <div className="flex items-center justify-between mb-1 text-[8.5px] font-mono text-neutral-500 font-bold">
-                          <span>Lampiran #{idx + 1}</span>
-                          <span>No Trans: {tx.no} | {tx.tanggal}</span>
+                    <div key={`print-attach-${tx.no}-${idx}`} className="py-3 flex items-start justify-between gap-6 page-break-inside-avoid break-inside-avoid">
+                      {/* Left Column: Transaction metadata & description */}
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-center space-x-2 text-[8.5px] font-mono text-neutral-500 font-bold">
+                          <span className="bg-neutral-200 px-1.5 py-0.5 rounded text-neutral-700">LAMPIRAN #{idx + 1}</span>
+                          <span>No. Transaksi: {tx.no}</span>
+                          <span>•</span>
+                          <span>Tanggal: {tx.tanggal}</span>
                         </div>
-                        <p className="text-[11px] font-black text-neutral-900 border-b border-neutral-200 pb-1 mb-2 truncate" title={tx.deskripsi}>
+                        <p className="text-xs font-extrabold text-neutral-900 leading-snug">
                           {tx.deskripsi}
                         </p>
-                        <div className="flex justify-between items-center text-[10px]">
-                          <span className="font-medium text-neutral-500">Nilai Nominal:</span>
-                          <span className={`font-mono font-bold ${tx.pemasukan ? 'text-emerald-700' : 'text-rose-700'}`}>
-                            {tx.pemasukan ? `(+) ${formatRupiah(tx.pemasukan)}` : `(-) ${formatRupiah(tx.pengeluaran!)}`}
-                          </span>
+                        <div className="flex items-center space-x-3 text-[9.5px]">
+                          <div>
+                            <span className="text-neutral-400 font-medium mr-1">Nilai Nominal:</span>
+                            <span className={`font-mono font-bold ${tx.pemasukan ? 'text-emerald-700' : 'text-rose-700'}`}>
+                              {tx.pemasukan ? `(+) ${formatRupiah(tx.pemasukan)}` : `(-) ${formatRupiah(tx.pengeluaran!)}`}
+                            </span>
+                          </div>
+                          <span className="text-neutral-300 font-mono">|</span>
+                          <div className="truncate max-w-[200px]">
+                            <span className="text-neutral-400 font-medium mr-1">Berkas:</span>
+                            <span className="font-mono text-neutral-600 text-[8.5px]">{tx.attachment?.name}</span>
+                          </div>
                         </div>
-                        <p className="text-[9px] text-neutral-400 font-mono mt-1 mb-2 truncate">Nama Berkas: {tx.attachment?.name}</p>
                       </div>
-                      
-                      {tx.attachment?.data.startsWith('data:image/') ? (
-                        <div className="border border-neutral-200 rounded overflow-hidden bg-white flex items-center justify-center p-2 h-40">
+
+                      {/* Right Column: Unified-sized preview of the attachment (Compacted to h-20 / w-32 for extreme space efficiency) */}
+                      <div className="w-32 h-20 border border-neutral-300 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0 shadow-sm">
+                        {tx.attachment?.data.startsWith('data:image/') ? (
                           <img 
                             src={tx.attachment.data} 
                             alt={`Bukti - ${tx.deskripsi}`}
                             className="max-h-full max-w-full object-contain"
                             referrerPolicy="no-referrer"
                           />
-                        </div>
-                      ) : (
-                        <div className="border border-dashed border-neutral-300 rounded p-3 bg-white text-center flex flex-col items-center justify-center space-y-1 h-40">
-                          <FileText className="w-8 h-8 text-neutral-400" />
-                          <p className="text-[10px] font-bold text-neutral-700">Dokumen Non-Gambar (PDF/Lainnya)</p>
-                          <span className="text-[8.5px] text-neutral-400 px-1">Silakan unduh berkas secara digital dari dasbor filter transaksi.</span>
-                        </div>
-                      )}
+                        ) : (
+                          <div className="flex flex-col items-center justify-center text-center space-y-0.5 h-full w-full bg-neutral-50">
+                            <FileText className="w-5 h-5 text-neutral-400" />
+                            <p className="text-[8px] font-bold text-neutral-700 leading-none">PDF/Berkas</p>
+                            <span className="text-[7px] text-neutral-400 px-1 leading-tight truncate max-w-[110px]">
+                              {tx.attachment?.name}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -2289,11 +2378,38 @@ export default function TransactionsTable({
         ) : (
           <>
             {/* Dedicated Attachments-Only print Layout: LAPORAN DOKUMEN LAMPIRAN BUKTI KAS FISIK */}
-            {/* Kop Surat (Institutional Header for Musholla Al-Falah) */}
-            <div className="text-center pb-5 border-b-4 border-double border-black relative">
-              <h1 className="text-2xl font-black tracking-wide uppercase text-black">MUSHOLA AL-FALAH</h1>
-              <p className="text-xs text-neutral-600 font-medium mt-1">Sekretariat: Jl. Raya Al-Falah No. 12, Kel. Palmerah, Jakarta Barat, 11480</p>
-              <p className="text-[10px] text-neutral-500 font-mono mt-0.5">Email: info@musholaalfalah.my.id | Telp: +62 821-1234-5678</p>
+            {/* Elegant Institutional Kop Surat Banner */}
+            <div className="w-full bg-[#0b1c2d] text-center py-6 px-4 rounded-xl relative overflow-hidden shadow-md flex flex-col items-center justify-center mb-6">
+              {/* Central Golden Dome & Crescent Icon */}
+              <div className="relative w-16 h-12 flex items-center justify-center text-[#d4a555] mb-1">
+                {/* Crescent Moon */}
+                <span className="absolute text-4xl select-none leading-none -translate-x-3 -translate-y-2.5 rotate-[-15deg] font-serif">☾</span>
+                {/* Dome Outline */}
+                <svg className="w-10 h-10 -translate-y-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3,19 L21,19" />
+                  <path d="M4,19 C4,12 8,8 12,8 C16,8 20,12 20,19" />
+                  <path d="M7,19 C7,14 9.5,11.5 12,11.5 C14.5,11.5 17,14 17,19" />
+                  <path d="M12,8 L12,4" />
+                  <circle cx="12" cy="3.5" r="0.6" fill="currentColor" />
+                </svg>
+              </div>
+
+              {/* Title & Subtitle */}
+              <h1 className="text-xl font-extrabold tracking-[0.1em] uppercase text-[#d4a555] font-sans m-0 leading-tight">
+                DKM AL-FALAH
+              </h1>
+              <p className="text-[10px] text-[#dcd2be] font-bold mt-1.5 mb-0 max-w-xl leading-normal font-sans">
+                Perumahan Victoria Permai, Babelan Kota, Babelan, Bekasi 17610
+              </p>
+
+              {/* Decorative Divider */}
+              <div className="w-full max-w-lg flex items-center justify-between mt-3.5 text-[#d4a555] font-sans px-4">
+                <span className="text-[7px] opacity-90">◆</span>
+                <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#d4a555] to-transparent mx-2"></div>
+                <span className="text-[9px] mx-1">◆</span>
+                <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#d4a555] to-transparent mx-2"></div>
+                <span className="text-[7px] opacity-90">◆</span>
+              </div>
             </div>
 
             {/* Laporan Title */}
@@ -2337,49 +2453,54 @@ export default function TransactionsTable({
             </div>
 
             {/* Page break grids of actual attachments */}
-            <div className="space-y-12">
+            <div className="divide-y divide-neutral-300 border-t border-b border-neutral-300">
               {processedTransactions.filter(tx => tx.attachment).map((tx, idx) => (
-                <div key={`print-attach-only-${tx.no}-${idx}`} className="border-2 border-neutral-400 rounded-xl p-6 bg-white page-break-inside-avoid break-inside-avoid flex flex-col justify-between min-h-[400px]">
-                  <div>
-                    <div className="flex items-center justify-between mb-3 text-[10px] font-mono text-neutral-600 font-black border-b border-neutral-300 pb-2">
-                      <span className="uppercase tracking-wider">HALAMAN LAMPIRAN BUKTI #{idx + 1}</span>
-                      <span>No. Transaksi: {tx.no} | Tanggal Jurnal: {tx.tanggal}</span>
+                <div key={`print-attach-only-${tx.no}-${idx}`} className="py-3 flex items-start justify-between gap-6 page-break-inside-avoid break-inside-avoid">
+                  {/* Left Column: Transaction metadata & description */}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center space-x-2 text-[8.5px] font-mono text-neutral-500 font-bold">
+                      <span className="bg-neutral-200 px-1.5 py-0.5 rounded text-neutral-700">LAMPIRAN #{idx + 1}</span>
+                      <span>No. Transaksi: {tx.no}</span>
+                      <span>•</span>
+                      <span>Tanggal: {tx.tanggal}</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-6 mb-4 text-xs">
-                      <div>
-                        <span className="block text-[9px] font-bold text-neutral-400 uppercase tracking-wide">Deskripsi / Peruntukan Dana</span>
-                        <p className="font-extrabold text-neutral-900 text-sm mt-0.5 leading-snug">{tx.deskripsi}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="block text-[9px] font-bold text-neutral-400 uppercase tracking-wide">Nilai Nominal</span>
-                        <p className={`font-mono text-sm font-black mt-0.5 ${tx.pemasukan ? 'text-emerald-700' : 'text-rose-700'}`}>
-                          {tx.pemasukan ? `(+) ${formatRupiah(tx.pemasukan)}` : `(-) ${formatRupiah(tx.pengeluaran!)}`}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-[10px] text-neutral-400 font-mono mb-4 bg-neutral-50 border border-neutral-200 p-1.5 rounded truncate">
-                      File: {tx.attachment?.name} ({tx.attachment?.type})
+                    <p className="text-xs font-extrabold text-neutral-900 leading-snug">
+                      {tx.deskripsi}
                     </p>
+                    <div className="flex items-center space-x-3 text-[9.5px]">
+                      <div>
+                        <span className="text-neutral-400 font-medium mr-1">Nilai Nominal:</span>
+                        <span className={`font-mono font-bold ${tx.pemasukan ? 'text-emerald-700' : 'text-rose-700'}`}>
+                          {tx.pemasukan ? `(+) ${formatRupiah(tx.pemasukan)}` : `(-) ${formatRupiah(tx.pengeluaran!)}`}
+                        </span>
+                      </div>
+                      <span className="text-neutral-300 font-mono">|</span>
+                      <div className="truncate max-w-[200px]">
+                        <span className="text-neutral-400 font-medium mr-1">Berkas:</span>
+                        <span className="font-mono text-neutral-600 text-[8.5px]">{tx.attachment?.name}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {tx.attachment?.data.startsWith('data:image/') ? (
-                    <div className="border border-neutral-300 rounded-lg p-4 bg-white flex items-center justify-center max-h-[500px]">
+                  {/* Right Column: Unified-sized preview of the attachment */}
+                  <div className="w-32 h-20 border border-neutral-300 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1 shrink-0 shadow-sm">
+                    {tx.attachment?.data.startsWith('data:image/') ? (
                       <img 
                         src={tx.attachment.data} 
                         alt={`Bukti - ${tx.deskripsi}`}
-                        className="max-h-[450px] max-w-full object-contain shadow-md border border-neutral-200"
+                        className="max-h-full max-w-full object-contain"
                         referrerPolicy="no-referrer"
                       />
-                    </div>
-                  ) : (
-                    <div className="border-2 border-dashed border-neutral-300 rounded-lg p-10 bg-neutral-50 text-center flex flex-col items-center justify-center space-y-3 h-80">
-                      <FileText className="w-14 h-14 text-neutral-400" />
-                      <p className="text-xs font-black text-neutral-800">E-Dokumen Berkas Non-Gambar ({tx.attachment?.name.split('.').pop()?.toUpperCase()})</p>
-                      <p className="text-[10.5px] text-neutral-500 max-w-md leading-relaxed mx-auto">
-                        Dokumen bukti ini diarsipkan secara digital dalam format biner yang aman. Anda dapat mengunduh berkas fisik aslinya kapan saja langsung dari tabel rekam transaksi digital di halaman dasbor utama.
-                      </p>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-center space-y-0.5 h-full w-full bg-neutral-50">
+                        <FileText className="w-5 h-5 text-neutral-400" />
+                        <p className="text-[8px] font-bold text-neutral-700 leading-none">PDF/Berkas</p>
+                        <span className="text-[7px] text-neutral-400 px-1 leading-tight truncate max-w-[110px]">
+                          {tx.attachment?.name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

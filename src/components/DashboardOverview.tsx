@@ -331,12 +331,12 @@ export default function DashboardOverview({ transactions, onNavigateTab, gasUrl,
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {recentTransactions.map((tx, index) => (
-            <div key={`recent-tx-${tx.no}-${index}`} className="flex items-center justify-between p-4 rounded-xl bg-[#0a0c18]/55 border border-slate-850 hover:border-emerald-500/30 transition-all duration-300 group hover:bg-[#0d1020]/70 hover:shadow-lg">
+            <div key={`recent-tx-${tx.no}-${index}`} className="recent-tx-card flex items-center justify-between p-4 rounded-xl transition-all duration-300 group hover:shadow-lg">
               <div className="flex items-center space-x-3.5 min-w-0">
                 <div className={`p-2.5 rounded-xl ${
                   tx.pemasukan 
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]' 
-                    : 'bg-rose-500/10 text-rose-450 border border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.05)]'
+                    ? 'recent-tx-badge-masuk' 
+                    : 'recent-tx-badge-keluar'
                 }`}>
                   <span className="text-xs font-black font-mono">#{tx.no}</span>
                 </div>

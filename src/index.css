@@ -215,3 +215,230 @@ body.light-theme .bg-\[\#111425\] {
   border-color: #cbd5e1 !important;
 }
 
+/* ==========================================================================
+   Table Custom Semantic Classes (Elegant Dark Mode Default)
+   ========================================================================== */
+.bg-table-header {
+  background-color: #0a0c18;
+}
+.text-table-header-text {
+  color: #94a3b8; /* slate-400 */
+}
+.bg-table-saldo-header {
+  background-color: #0c0e1a;
+}
+.text-table-saldo-header-text {
+  color: #fbbf24; /* amber-400 */
+}
+.border-table-border {
+  border-color: rgba(30, 41, 59, 0.5); /* slate-800/50 */
+}
+.border-table-border-subtle {
+  border-color: rgba(30, 41, 59, 0.2); /* slate-800/20 */
+}
+.border-table-border-highlight {
+  border-color: rgba(30, 41, 59, 0.3); /* slate-800/30 */
+}
+.bg-table-row-even {
+  background-color: #111425;
+}
+.bg-table-row-odd {
+  background-color: rgba(10, 12, 24, 0.3);
+}
+.bg-table-row-hover:hover {
+  background-color: rgba(30, 41, 59, 0.25) !important;
+}
+.bg-table-saldo {
+  background-color: rgba(12, 14, 26, 0.8);
+}
+.text-table-saldo-text {
+  color: #fcd34d; /* amber-300 */
+}
+
+/* ==========================================================================
+   Light Theme Overrides for Semantic Table Classes
+   ========================================================================== */
+body.light-theme .bg-table-header {
+  background-color: #f8fafc !important;
+}
+body.light-theme .text-table-header-text {
+  color: #475569 !important; /* slate-600 */
+}
+body.light-theme .bg-table-saldo-header {
+  background-color: #f1f5f9 !important;
+}
+body.light-theme .text-table-saldo-header-text {
+  color: #b45309 !important; /* amber-700 */
+}
+body.light-theme .border-table-border {
+  border-color: #cbd5e1 !important;
+}
+body.light-theme .border-table-border-subtle {
+  border-color: #e2e8f0 !important;
+}
+body.light-theme .border-table-border-highlight {
+  border-color: #e2e8f0 !important;
+}
+body.light-theme .bg-table-row-even {
+  background-color: #ffffff !important;
+}
+body.light-theme .bg-table-row-odd {
+  background-color: #f8fafc !important; /* Soft premium slate-white alternating row */
+}
+body.light-theme .bg-table-row-hover:hover {
+  background-color: #f1f5f9 !important;
+}
+body.light-theme .bg-table-saldo {
+  background-color: #fffbeb !important; /* Warm light amber/gold luxury tint */
+}
+body.light-theme .text-table-saldo-text {
+  color: #b45309 !important; /* High contrast rich golden amber text */
+}
+
+/* ==========================================================================
+   Recent Transactions Cards & Colors (Default Dark Mode)
+   ========================================================================== */
+.recent-tx-card {
+  background-color: rgba(10, 12, 24, 0.55);
+  border: 1px solid rgba(30, 41, 59, 0.8);
+}
+.recent-tx-card:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+  background-color: rgba(13, 16, 32, 0.7);
+}
+
+.recent-tx-badge-masuk {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #34d399; /* emerald-400 */
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.05);
+}
+.recent-tx-badge-keluar {
+  background-color: rgba(244, 63, 94, 0.1);
+  color: #fb7185; /* rose-400 */
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.05);
+}
+
+/* ==========================================================================
+   Light Theme Overrides for Recent Transactions & Extra Aesthetics
+   ========================================================================== */
+body.light-theme .recent-tx-card {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02) !important;
+}
+body.light-theme .recent-tx-card:hover {
+  border-color: #10b981 !important; /* Elegant green highlight border on hover */
+  background-color: #f8fafc !important; /* Soft premium slate-white on hover */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03) !important;
+}
+
+body.light-theme .recent-tx-badge-masuk {
+  background-color: #ecfdf5 !important;
+  color: #059669 !important; /* emerald-600 */
+  border-color: #a7f3d0 !important; /* emerald-200 */
+}
+body.light-theme .recent-tx-badge-keluar {
+  background-color: #fff1f2 !important;
+  color: #e11d48 !important; /* rose-600 */
+  border-color: #fecdd3 !important; /* rose-200 */
+}
+
+/* Higher contrast text colors for modern light theme */
+body.light-theme .text-emerald-400 {
+  color: #059669 !important;
+}
+body.light-theme .text-rose-450,
+body.light-theme .text-rose-455 {
+  color: #dc2626 !important;
+}
+body.light-theme .text-slate-400 {
+  color: #475569 !important; /* Elegant slate-600 */
+}
+body.light-theme .text-slate-500 {
+  color: #64748b !important; /* Slate-500 */
+}
+
+/* Mobile View adjustments for light theme */
+body.light-theme .divide-slate-800\/50 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e2e8f0 !important;
+}
+body.light-theme .hover\:bg-\[\#111425\]\/50:hover {
+  background-color: #f1f5f9 !important;
+}
+
+/* ==========================================================================
+   Filter Tabs System
+   ========================================================================== */
+.filter-tab-all-active {
+  background-color: #1e293b !important; /* slate-800 */
+  color: #ffffff !important; /* Force pristine white text */
+}
+.filter-tab-all-inactive {
+  color: #94a3b8 !important; /* slate-400 */
+}
+.filter-tab-all-inactive:hover {
+  color: #f1f5f9 !important; /* slate-100 */
+}
+
+.filter-tab-pemasukan-active {
+  background-color: rgba(16, 185, 129, 0.2) !important; /* emerald bg */
+  color: #34d399 !important; /* emerald-400 */
+}
+.filter-tab-pemasukan-inactive {
+  color: #94a3b8 !important; /* slate-400 */
+}
+.filter-tab-pemasukan-inactive:hover {
+  color: #34d399 !important; /* emerald hover */
+}
+
+.filter-tab-pengeluaran-active {
+  background-color: rgba(244, 63, 94, 0.2) !important; /* rose bg */
+  color: #fb7185 !important; /* rose-400 */
+}
+.filter-tab-pengeluaran-inactive {
+  color: #94a3b8 !important; /* slate-400 */
+}
+.filter-tab-pengeluaran-inactive:hover {
+  color: #fb7185 !important; /* rose hover */
+}
+
+/* Light theme overrides for filter tabs */
+body.light-theme .filter-tab-all-active {
+  background-color: #0f172a !important; /* Elegant deep charcoal / navy */
+  color: #ffffff !important; /* Crisp white text guaranteed, bypassing text-white overrides */
+}
+body.light-theme .filter-tab-all-inactive {
+  color: #475569 !important; /* Elegant slate-600 */
+}
+body.light-theme .filter-tab-all-inactive:hover {
+  color: #0f172a !important;
+}
+
+body.light-theme .filter-tab-pemasukan-active {
+  background-color: #ecfdf5 !important; /* Soft pastel green background */
+  color: #059669 !important; /* Contrastful deep emerald text */
+  border: 1px solid #a7f3d0 !important;
+}
+body.light-theme .filter-tab-pemasukan-inactive {
+  color: #475569 !important; /* Elegant slate-600 */
+}
+body.light-theme .filter-tab-pemasukan-inactive:hover {
+  color: #059669 !important;
+}
+
+body.light-theme .filter-tab-pengeluaran-active {
+  background-color: #fff1f2 !important; /* Soft pastel red background */
+  color: #e11d48 !important; /* Contrastful deep rose text */
+  border: 1px solid #fecdd3 !important;
+}
+body.light-theme .filter-tab-pengeluaran-inactive {
+  color: #475569 !important; /* Elegant slate-600 */
+}
+body.light-theme .filter-tab-pengeluaran-inactive:hover {
+  color: #e11d48 !important;
+}
+
+
+

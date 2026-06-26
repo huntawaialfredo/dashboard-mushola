@@ -62,8 +62,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       <div className="w-full max-w-md z-10 transition-all duration-300">
         
         {/* Brand Header */}
-        <div className="text-center mb-8 flex flex-col items-center justify-center">
-          <AlFalahLogo size="custom" className="w-48 h-32" />
+        <div className="text-center mb-6 flex flex-col items-center justify-center">
+          <AlFalahLogo size="custom" className="w-44 h-44" />
           <p className="text-[10px] text-emerald-400 font-mono mt-3 uppercase tracking-widest font-black">Sistem Kas & Keuangan Operasional</p>
         </div>
 

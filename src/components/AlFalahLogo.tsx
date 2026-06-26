@@ -28,7 +28,7 @@ export const AlFalahLogo: React.FC<AlFalahLogoProps> = ({
     <div className={`flex flex-col items-center justify-center ${iconOnly ? '' : 'space-y-4'}`}>
       {/* Real High-Fidelity 3D Golden Calligraphy Emblem */}
       <svg 
-        viewBox="0 0 300 140" 
+        viewBox="0 0 300 300" 
         fill="none" 
         xmlns="http://www.w3.org/2000/svg" 
         className={appliedClass}
@@ -46,32 +46,66 @@ export const AlFalahLogo: React.FC<AlFalahLogoProps> = ({
             <stop offset="100%" stopColor="#a37628" />
           </linearGradient>
 
+          {/* Luxury 3D Gunmetal Frame Gradient matching uploaded logo */}
+          <linearGradient id="frame-metallic-3d" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#2c3042" />
+            <stop offset="20%" stopColor="#5c627f" />
+            <stop offset="40%" stopColor="#1e212f" />
+            <stop offset="60%" stopColor="#8791b5" />
+            <stop offset="80%" stopColor="#12141f" />
+            <stop offset="100%" stopColor="#3d435e" />
+          </linearGradient>
+
           {/* Luxury subtle drop shadow for realistic 3D depth */}
           <filter id="gold-bevel-3d" x="-10%" y="-10%" width="125%" height="125%">
             <feDropShadow 
               dx="0" 
-              dy="2.5" 
-              stdDeviation="1.8" 
+              dy="3" 
+              stdDeviation="2" 
               floodColor="#000000" 
               floodOpacity={isDarkMode ? "0.85" : "0.35"} 
             />
             {/* Soft secondary ambient glow shadow */}
             <feDropShadow 
-              dx="1" 
-              dy="1" 
-              stdDeviation="0.8" 
+              dx="1.5" 
+              dy="1.5" 
+              stdDeviation="1" 
               floodColor="#aa7c11" 
               floodOpacity={isDarkMode ? "0.2" : "0.05"} 
             />
           </filter>
+
+          {/* Specific 3D Dropshadow for the Metallic Frame */}
+          <filter id="frame-shadow-3d" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow 
+              dx="0" 
+              dy="4" 
+              stdDeviation="3.5" 
+              floodColor="#000000" 
+              floodOpacity={isDarkMode ? "0.9" : "0.4"} 
+            />
+          </filter>
         </defs>
 
-        <g filter="url(#gold-bevel-3d)">
+        {/* 1. Outer 3D Gunmetal Rounded Frame Wrapper with Custom Elegant Open Bottom-Left Corner */}
+        <g filter="url(#frame-shadow-3d)">
+          <path 
+            d="M 36,190 V 84 A 48,48 0 0 1 84,36 H 216 A 48,48 0 0 1 264,84 V 216 A 48,48 0 0 1 216,264 H 44" 
+            stroke="url(#frame-metallic-3d)" 
+            strokeWidth="11"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+        </g>
+
+        {/* 2. Perfectly Centered 3D Golden Calligraphy */}
+        <g filter="url(#gold-bevel-3d)" transform="translate(5, 93)">
           {/* ==========================================
               ACTUAL "LOGO AL-FALAH 3D" GOLD VECTOR REPLICA
              ========================================== */}
           
-          {/* 1. Bottom flat foundation bar */}
+          {/* Bottom flat foundation bar */}
           <rect 
             x="40" 
             y="98" 
@@ -81,7 +115,7 @@ export const AlFalahLogo: React.FC<AlFalahLogoProps> = ({
             rx="0.5"
           />
 
-          {/* 2. Left Calligraphy Geometric Loop/Tunnel */}
+          {/* Left Calligraphy Geometric Loop/Tunnel */}
           {/* Outer Box Top Horizontal Bar */}
           <rect 
             x="40" 
@@ -126,7 +160,7 @@ export const AlFalahLogo: React.FC<AlFalahLogoProps> = ({
             fill="url(#gold-3d-reflection)" 
           />
 
-          {/* 3. Right Vertical Pillars/Minarets */}
+          {/* Right Vertical Pillars/Minarets */}
           {/* Tallest master pillar with 45-degree angle top cut (Minaret Peak) */}
           <path 
             d="M 174,22 L 182,14 L 182,98 L 174,98 Z" 

@@ -71,22 +71,14 @@ export default function Sidebar({
       {/* Mobile Top Bar */}
       <div id="mobile-nav" className="flex items-center justify-between px-4 py-3 bg-[#0a0c18] text-white lg:hidden border-b border-slate-800/50 print:hidden">
         <div className="flex items-center space-x-2.5">
-          <div className="p-1 px-1.5 bg-[#0e1124] border border-amber-500/25 rounded-2xl flex items-center justify-center shadow-[0_0_12px_rgba(212,165,85,0.15)] w-11 h-11 flex-shrink-0">
-            <AlFalahLogo iconOnly size="custom" className="w-9 h-4.5" isDarkMode={isDarkMode} />
+          <div className="p-1.5 bg-[#0e1124] border border-amber-500/25 rounded-2xl flex items-center justify-center shadow-[0_0_12px_rgba(212,165,85,0.15)] w-11 h-11 flex-shrink-0">
+            <AlFalahLogo iconOnly size="custom" className="w-8 h-8" isDarkMode={isDarkMode} />
           </div>
           <div>
-            <h1 className={`text-[12.5px] font-bold tracking-[0.14em] uppercase leading-none font-serif ${
-              isDarkMode 
-                ? 'text-amber-400 drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)]' 
-                : 'text-amber-700'
-            }`}>
+            <h1 className="text-[13px] font-black tracking-[0.14em] uppercase leading-none font-sans text-white">
               DKM AL-FALAH
             </h1>
-            <p className={`text-[8.5px] font-semibold tracking-[0.2em] uppercase font-sans mt-2 leading-none ${
-              isDarkMode 
-                ? 'text-slate-400' 
-                : 'text-slate-600'
-            }`}>
+            <p className="text-[8.5px] font-bold tracking-[0.2em] uppercase font-sans mt-2 leading-none text-slate-400">
               VICTORIA PERMAI
             </p>
           </div>
@@ -136,22 +128,14 @@ export default function Sidebar({
         {/* Sidebar Header */}
         <div className="p-6 border-b border-slate-800/50">
           <div className="flex items-center space-x-3.5 mb-1">
-            <div className="p-1 px-1.5 bg-[#0e1124] border border-amber-500/25 rounded-2xl flex items-center justify-center shadow-[0_0_15px_rgba(212,165,85,0.15)] w-12 h-12 flex-shrink-0">
-              <AlFalahLogo iconOnly size="custom" className="w-10 h-5" isDarkMode={isDarkMode} />
+            <div className="p-1 px-1 bg-[#0e1124] border border-amber-500/25 rounded-2xl flex items-center justify-center shadow-[0_0_15px_rgba(212,165,85,0.15)] w-12 h-12 flex-shrink-0">
+              <AlFalahLogo iconOnly size="custom" className="w-9 h-9" isDarkMode={isDarkMode} />
             </div>
             <div>
-              <h1 className={`text-[13.5px] font-bold tracking-[0.14em] uppercase leading-none font-serif ${
-                isDarkMode 
-                  ? 'text-amber-400 drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.6)]' 
-                  : 'text-amber-700'
-              }`}>
+              <h1 className="text-[14px] font-black tracking-[0.14em] uppercase leading-none font-sans text-white">
                 DKM AL-FALAH
               </h1>
-              <p className={`text-[8.5px] font-semibold tracking-[0.2em] uppercase font-sans mt-2.5 leading-none ${
-                isDarkMode 
-                  ? 'text-slate-400' 
-                  : 'text-slate-600'
-              }`}>
+              <p className="text-[8.5px] font-bold tracking-[0.2em] uppercase font-sans mt-2.5 leading-none text-slate-400">
                 VICTORIA PERMAI
               </p>
             </div>

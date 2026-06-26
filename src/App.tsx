@@ -423,7 +423,7 @@ export default function App() {
                 <RefreshCw className="w-10 h-10 text-emerald-400 animate-spin" />
               </div>
               <div>
-                <p className="text-sm font-extrabold text-white tracking-tight">Syncing Google Sheets...</p>
+                <p className="text-sm font-extrabold text-white tracking-tight">Syncing Firebase Server...</p>
                 <p className="text-xs text-slate-400 font-medium mt-0.5 font-mono">Memperbarui buku kas real-time Al-Falah.</p>
               </div>
             </div>
